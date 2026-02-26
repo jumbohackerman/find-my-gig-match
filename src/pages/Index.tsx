@@ -1,8 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Heart, Briefcase, RotateCcw } from "lucide-react";
 import SwipeCard from "@/components/SwipeCard";
 import AppliedList from "@/components/AppliedList";
+import JobFilters, { filterJobs, type JobFiltersState } from "@/components/JobFilters";
 import { jobs, type Job } from "@/data/jobs";
 
 const Index = () => {
@@ -10,13 +11,19 @@ const Index = () => {
   const [appliedJobs, setAppliedJobs] = useState<Job[]>([]);
   const [skippedJobs, setSkippedJobs] = useState<Job[]>([]);
   const [showApplied, setShowApplied] = useState(false);
+  const [filters, setFilters] = useState<JobFiltersState>({
+    location: "All",
+    type: "All",
+    salaryMin: 0,
+  });
 
-  const remainingJobs = jobs.slice(currentIndex);
-  const isFinished = currentIndex >= jobs.length;
+  const filteredJobs = useMemo(() => filterJobs(jobs, filters), [filters]);
+  const remainingJobs = filteredJobs.slice(currentIndex);
+  const isFinished = currentIndex >= filteredJobs.length;
 
   const handleSwipe = useCallback(
     (direction: "left" | "right") => {
-      const job = jobs[currentIndex];
+      const job = filteredJobs[currentIndex];
       if (!job) return;
 
       if (direction === "right") {
@@ -26,13 +33,18 @@ const Index = () => {
       }
       setCurrentIndex((prev) => prev + 1);
     },
-    [currentIndex]
+    [currentIndex, filteredJobs]
   );
 
   const handleReset = () => {
     setCurrentIndex(0);
     setAppliedJobs([]);
     setSkippedJobs([]);
+  };
+
+  const handleFiltersChange = (newFilters: JobFiltersState) => {
+    setFilters(newFilters);
+    setCurrentIndex(0);
   };
 
   return (
@@ -109,6 +121,14 @@ const Index = () => {
           </motion.div>
         ) : (
           <>
+            <JobFilters filters={filters} onChange={handleFiltersChange} />
+
+            {filteredJobs.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-sm">No jobs match your filters.</p>
+              </div>
+            ) : (
+            <>
             {/* Card stack */}
             <div className="relative w-full h-[420px] mb-8">
               <AnimatePresence>
@@ -142,8 +162,10 @@ const Index = () => {
 
             {/* Counter */}
             <p className="text-muted-foreground text-xs mt-4">
-              {currentIndex + 1} / {jobs.length}
+              {currentIndex + 1} / {filteredJobs.length}
             </p>
+            </>
+            )}
           </>
         )}
       </main>
