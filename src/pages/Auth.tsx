@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Briefcase, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Briefcase, Mail, Lock, User, ArrowRight, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type Mode = "login" | "signup";
+type Mode = "login" | "signup" | "forgot";
 type Role = "candidate" | "employer";
 
 const Auth = () => {
@@ -22,7 +22,14 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (mode === "signup") {
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("Check your email for a password reset link!");
+        setMode("login");
+      } else if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -33,7 +40,6 @@ const Auth = () => {
         });
         if (error) throw error;
 
-        // If session exists, user is auto-confirmed — navigate directly
         if (data.session) {
           navigate("/");
         } else {
@@ -67,12 +73,14 @@ const Auth = () => {
 
         <div className="card-gradient rounded-2xl border border-border p-6">
           <h2 className="font-display text-lg font-bold text-foreground mb-1">
-            {mode === "login" ? "Welcome back" : "Create account"}
+            {mode === "login" ? "Welcome back" : mode === "signup" ? "Create account" : "Reset password"}
           </h2>
           <p className="text-muted-foreground text-sm mb-5">
             {mode === "login"
               ? "Sign in to continue swiping."
-              : "Join as a candidate or employer."}
+              : mode === "signup"
+              ? "Join as a candidate or employer."
+              : "Enter your email to receive a reset link."}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -127,40 +135,71 @@ const Auth = () => {
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs text-muted-foreground font-medium">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  required
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  minLength={6}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                />
+            {mode !== "forgot" && (
+              <div className="space-y-1.5">
+                <label className="text-xs text-muted-foreground font-medium">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    required
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    minLength={6}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
               </div>
-            </div>
+            )}
+
+            {mode === "login" && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setMode("forgot")}
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
 
             <button
               type="submit"
               disabled={loading}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-[1.02] transition-transform disabled:opacity-50"
             >
-              {loading ? "Loading…" : mode === "login" ? "Sign In" : "Create Account"}
+              {loading
+                ? "Loading…"
+                : mode === "login"
+                ? "Sign In"
+                : mode === "signup"
+                ? "Create Account"
+                : "Send Reset Link"}
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-4">
-            {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button
-              onClick={() => setMode(mode === "login" ? "signup" : "login")}
-              className="text-primary font-medium hover:underline"
-            >
-              {mode === "login" ? "Sign up" : "Sign in"}
-            </button>
+            {mode === "forgot" ? (
+              <button
+                onClick={() => setMode("login")}
+                className="text-primary font-medium hover:underline inline-flex items-center gap-1"
+              >
+                <ArrowLeft className="w-3 h-3" /> Back to sign in
+              </button>
+            ) : (
+              <>
+                {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
+                <button
+                  onClick={() => setMode(mode === "login" ? "signup" : "login")}
+                  className="text-primary font-medium hover:underline"
+                >
+                  {mode === "login" ? "Sign up" : "Sign in"}
+                </button>
+              </>
+            )}
           </p>
         </div>
       </motion.div>
