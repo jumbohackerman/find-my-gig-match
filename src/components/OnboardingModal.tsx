@@ -1,0 +1,212 @@
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ArrowRight, ArrowLeft } from "lucide-react";
+
+const SKILL_OPTIONS = [
+  "React", "TypeScript", "JavaScript", "Node.js", "Python", "Go",
+  "GraphQL", "PostgreSQL", "AWS", "Docker", "Kubernetes", "Terraform",
+  "Figma", "UI/UX", "Swift", "Kotlin", "React Native", "Next.js",
+  "Tailwind CSS", "MongoDB", "Redis", "Machine Learning",
+];
+
+const SENIORITY_OPTIONS = ["Junior", "Mid", "Senior", "Lead"];
+const REMOTE_OPTIONS = ["Remote", "Hybrid", "On-site", "Any"];
+
+interface OnboardingData {
+  title: string;
+  skills: string[];
+  salaryMin: number;
+  salaryMax: number;
+  remotePreference: string;
+  seniority: string;
+}
+
+interface Props {
+  open: boolean;
+  onComplete: (data: OnboardingData) => void;
+  onClose: () => void;
+}
+
+const OnboardingModal = ({ open, onComplete, onClose }: Props) => {
+  const [step, setStep] = useState(0);
+  const [title, setTitle] = useState("");
+  const [skills, setSkills] = useState<string[]>([]);
+  const [salaryMin, setSalaryMin] = useState(80);
+  const [salaryMax, setSalaryMax] = useState(160);
+  const [remote, setRemote] = useState("Any");
+  const [seniority, setSeniority] = useState("Mid");
+
+  const toggleSkill = (s: string) => {
+    setSkills((prev) =>
+      prev.includes(s) ? prev.filter((x) => x !== s) : prev.length < 8 ? [...prev, s] : prev
+    );
+  };
+
+  const steps = [
+    // Step 0: Role
+    <div key="role" className="space-y-3">
+      <h3 className="font-display text-lg font-bold text-foreground">What's your primary role?</h3>
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="e.g. Frontend Developer"
+        className="w-full px-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+      />
+    </div>,
+    // Step 1: Skills
+    <div key="skills" className="space-y-3">
+      <h3 className="font-display text-lg font-bold text-foreground">Your top skills (up to 8)</h3>
+      <div className="flex flex-wrap gap-2">
+        {SKILL_OPTIONS.map((s) => (
+          <button
+            key={s}
+            onClick={() => toggleSkill(s)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              skills.includes(s)
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground hover:bg-muted"
+            }`}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">{skills.length}/8 selected</p>
+    </div>,
+    // Step 2: Salary + Seniority
+    <div key="salary" className="space-y-4">
+      <h3 className="font-display text-lg font-bold text-foreground">Salary & Seniority</h3>
+      <div className="space-y-2">
+        <label className="text-xs text-muted-foreground font-medium">
+          Preferred salary: ${salaryMin}k – ${salaryMax}k
+        </label>
+        <div className="flex gap-3">
+          <input
+            type="range" min={30} max={250} step={10} value={salaryMin}
+            onChange={(e) => setSalaryMin(Math.min(Number(e.target.value), salaryMax - 10))}
+            className="flex-1"
+          />
+          <input
+            type="range" min={30} max={250} step={10} value={salaryMax}
+            onChange={(e) => setSalaryMax(Math.max(Number(e.target.value), salaryMin + 10))}
+            className="flex-1"
+          />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <label className="text-xs text-muted-foreground font-medium">Seniority level</label>
+        <div className="grid grid-cols-4 gap-2">
+          {SENIORITY_OPTIONS.map((s) => (
+            <button
+              key={s}
+              onClick={() => setSeniority(s)}
+              className={`py-2 rounded-xl text-xs font-medium transition-all ${
+                seniority === s
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-muted"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>,
+    // Step 3: Remote preference
+    <div key="remote" className="space-y-3">
+      <h3 className="font-display text-lg font-bold text-foreground">Work preference</h3>
+      <div className="grid grid-cols-2 gap-2">
+        {REMOTE_OPTIONS.map((r) => (
+          <button
+            key={r}
+            onClick={() => setRemote(r)}
+            className={`py-3 rounded-xl text-sm font-medium transition-all ${
+              remote === r
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground hover:bg-muted"
+            }`}
+          >
+            {r}
+          </button>
+        ))}
+      </div>
+    </div>,
+  ];
+
+  const canNext = step === 0 ? title.trim().length > 0 : step === 1 ? skills.length >= 1 : true;
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md card-gradient rounded-2xl border border-border p-6 relative"
+      >
+        <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="flex gap-1 mb-5">
+          {steps.map((_, i) => (
+            <div
+              key={i}
+              className={`h-1 flex-1 rounded-full transition-colors ${
+                i <= step ? "bg-primary" : "bg-secondary"
+              }`}
+            />
+          ))}
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+          >
+            {steps[step]}
+          </motion.div>
+        </AnimatePresence>
+
+        <div className="flex justify-between mt-6">
+          <button
+            onClick={() => setStep((s) => s - 1)}
+            disabled={step === 0}
+            className="flex items-center gap-1 px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors disabled:opacity-30"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
+          {step < steps.length - 1 ? (
+            <button
+              onClick={() => setStep((s) => s + 1)}
+              disabled={!canNext}
+              className="flex items-center gap-2 px-5 py-2 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-105 transition-transform disabled:opacity-50"
+            >
+              Next <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              onClick={() =>
+                onComplete({
+                  title,
+                  skills,
+                  salaryMin,
+                  salaryMax,
+                  remotePreference: remote,
+                  seniority,
+                })
+              }
+              className="flex items-center gap-2 px-5 py-2 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-105 transition-transform"
+            >
+              Finish ✓
+            </button>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default OnboardingModal;

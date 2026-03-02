@@ -1,14 +1,18 @@
 import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { MapPin, Clock, Briefcase, DollarSign } from "lucide-react";
+import MatchBadge from "@/components/MatchBadge";
 import type { Job } from "@/data/jobs";
+import type { MatchResult } from "@/lib/matchScoring";
 
 interface SwipeCardProps {
   job: Job;
-  onSwipe: (direction: "left" | "right") => void;
+  onSwipe: (direction: "left" | "right" | "save") => void;
   isTop: boolean;
+  matchResult?: MatchResult;
+  isSaved?: boolean;
 }
 
-const SwipeCard = ({ job, onSwipe, isTop }: SwipeCardProps) => {
+const SwipeCard = ({ job, onSwipe, isTop, matchResult, isSaved }: SwipeCardProps) => {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-15, 15]);
   const rightOpacity = useTransform(x, [0, 100], [0, 1]);
@@ -21,6 +25,8 @@ const SwipeCard = ({ job, onSwipe, isTop }: SwipeCardProps) => {
       onSwipe("left");
     }
   };
+
+  const hasSalary = job.salary && job.salary.trim().length > 0;
 
   return (
     <motion.div
@@ -59,31 +65,52 @@ const SwipeCard = ({ job, onSwipe, isTop }: SwipeCardProps) => {
 
         {/* Company header */}
         <div className="p-6 pb-4">
-          <div className="flex items-center gap-4 mb-4">
+          <div className="flex items-center gap-4 mb-3">
             <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center text-3xl">
               {job.logo}
             </div>
-            <div>
+            <div className="flex-1">
               <h3 className="font-display text-sm text-muted-foreground">{job.company}</h3>
               <p className="text-xs text-muted-foreground">{job.posted}</p>
             </div>
-            <span className="ml-auto px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-medium">
-              {job.type}
-            </span>
+            <div className="flex items-center gap-2">
+              {isSaved && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-400/15 text-yellow-400 font-medium border border-yellow-400/30">
+                  ⭐ Saved
+                </span>
+              )}
+              {matchResult && <MatchBadge result={matchResult} compact />}
+            </div>
           </div>
 
-          <h2 className="font-display text-2xl font-bold text-foreground mb-3">{job.title}</h2>
+          <h2 className="font-display text-2xl font-bold text-foreground mb-1">{job.title}</h2>
+
+          {/* Salary - prominent */}
+          <div className="mb-3">
+            {hasSalary ? (
+              <span className="text-lg font-bold text-accent">{job.salary}</span>
+            ) : (
+              <span className="text-sm text-muted-foreground italic">Salary not disclosed</span>
+            )}
+          </div>
+
           <p className="text-muted-foreground text-sm leading-relaxed mb-4">{job.description}</p>
+
+          {/* Match explainability */}
+          {matchResult && (
+            <div className="mb-4 p-3 rounded-xl bg-secondary/50 border border-border">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+                Why this matches you
+              </p>
+              <MatchBadge result={matchResult} />
+            </div>
+          )}
 
           {/* Details */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="w-4 h-4 text-primary" />
               {job.location}
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <DollarSign className="w-4 h-4 text-accent" />
-              {job.salary}
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Briefcase className="w-4 h-4 text-primary" />
@@ -97,14 +124,24 @@ const SwipeCard = ({ job, onSwipe, isTop }: SwipeCardProps) => {
 
           {/* Tags */}
           <div className="flex flex-wrap gap-2">
-            {job.tags.map((tag) => (
-              <span
-                key={tag}
-                className="px-3 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-medium"
-              >
-                {tag}
-              </span>
-            ))}
+            {job.tags.map((tag) => {
+              const isMatched = matchResult?.matchedSkills.includes(tag);
+              const isMissing = matchResult?.missingSkills.includes(tag);
+              return (
+                <span
+                  key={tag}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                    isMatched
+                      ? "bg-accent/15 text-accent border border-accent/30"
+                      : isMissing
+                      ? "bg-destructive/10 text-muted-foreground border border-destructive/20"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {tag}
+                </span>
+              );
+            })}
           </div>
         </div>
       </div>

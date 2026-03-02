@@ -1,17 +1,49 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Briefcase, Plus, Users, Trash2, Eye, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Briefcase, Plus, Users, Trash2, Eye, ChevronDown, ChevronUp,
+  BarChart3, TrendingUp, Zap,
+} from "lucide-react";
 import { jobs as initialJobs, type Job } from "@/data/jobs";
-import { seekers } from "@/data/seekers";
+import { seekers, type Seeker } from "@/data/seekers";
+import MatchBadge from "@/components/MatchBadge";
+import { calculateMatch, type CandidateProfile, type MatchResult } from "@/lib/matchScoring";
+
+// Convert seeker to CandidateProfile for scoring
+function seekerToProfile(seeker: Seeker): CandidateProfile {
+  const expMatch = seeker.experience.match(/(\d+)/);
+  return {
+    skills: seeker.skills,
+    seniority: parseInt(expMatch?.[1] || "3") >= 6 ? "Senior" : parseInt(expMatch?.[1] || "3") >= 3 ? "Mid" : "Junior",
+    preferredSalaryMin: 80,
+    preferredSalaryMax: 180,
+    remotePreference: seeker.location.toLowerCase().includes("remote") ? "Remote" : "Any",
+    location: seeker.location,
+    experienceYears: parseInt(expMatch?.[1] || "3"),
+    title: seeker.title,
+  };
+}
 
 // Simulate some applicants per job
 const generateApplicants = () => {
   const map: Record<string, typeof seekers> = {};
   initialJobs.forEach((job) => {
-    const count = Math.floor(Math.random() * 4);
+    const count = Math.floor(Math.random() * 4) + 1;
     const shuffled = [...seekers].sort(() => 0.5 - Math.random());
     map[job.id] = shuffled.slice(0, count);
+  });
+  return map;
+};
+
+// Simulate metrics
+const generateMetrics = () => {
+  const map: Record<string, { views: number; swipesRight: number; applications: number }> = {};
+  initialJobs.forEach((job) => {
+    const views = Math.floor(Math.random() * 300) + 50;
+    const swipesRight = Math.floor(views * (Math.random() * 0.4 + 0.1));
+    const applications = Math.floor(swipesRight * (Math.random() * 0.6 + 0.2));
+    map[job.id] = { views, swipesRight, applications };
   });
   return map;
 };
@@ -19,30 +51,37 @@ const generateApplicants = () => {
 const Employer = () => {
   const [postedJobs, setPostedJobs] = useState<Job[]>(initialJobs);
   const [applicants] = useState(generateApplicants);
+  const [metrics] = useState(generateMetrics);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
+  const [analyzedJob, setAnalyzedJob] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
 
   const [form, setForm] = useState({
-    title: "",
-    company: "",
-    logo: "🏢",
-    location: "",
-    salary: "",
-    type: "Full-time" as Job["type"],
-    description: "",
-    tags: "",
+    title: "", company: "", logo: "🏢", location: "", salary: "",
+    type: "Full-time" as Job["type"], description: "", tags: "",
   });
+
+  // Pre-compute match scores for analyzed job
+  const rankedApplicants = useMemo(() => {
+    if (!analyzedJob) return [];
+    const job = postedJobs.find((j) => j.id === analyzedJob);
+    const jobApplicants = applicants[analyzedJob] || [];
+    if (!job) return [];
+
+    return jobApplicants
+      .map((seeker) => ({
+        seeker,
+        match: calculateMatch(seekerToProfile(seeker), job),
+      }))
+      .sort((a, b) => b.match.score - a.match.score);
+  }, [analyzedJob, postedJobs, applicants]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newJob: Job = {
       id: String(Date.now()),
-      title: form.title,
-      company: form.company,
-      logo: form.logo,
-      location: form.location,
-      salary: form.salary,
-      type: form.type,
+      title: form.title, company: form.company, logo: form.logo,
+      location: form.location, salary: form.salary, type: form.type,
       description: form.description,
       tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
       posted: "Just now",
@@ -56,9 +95,19 @@ const Employer = () => {
     setPostedJobs((prev) => prev.filter((j) => j.id !== id));
   };
 
+  const getAvgMatchScore = (jobId: string) => {
+    const job = postedJobs.find((j) => j.id === jobId);
+    const jobApplicants = applicants[jobId] || [];
+    if (!job || jobApplicants.length === 0) return 0;
+    const total = jobApplicants.reduce(
+      (sum, s) => sum + calculateMatch(seekerToProfile(s), job).score,
+      0
+    );
+    return Math.round(total / jobApplicants.length);
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <header className="px-6 py-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg btn-gradient flex items-center justify-center">
@@ -67,18 +116,11 @@ const Employer = () => {
           <h1 className="font-display text-xl font-bold text-foreground">JobSwipe</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            to="/"
-            className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors"
-          >
+          <Link to="/" className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">
             Browse Jobs
           </Link>
-          <Link
-            to="/profiles"
-            className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors flex items-center gap-1.5"
-          >
-            <Users className="w-4 h-4" />
-            Talent
+          <Link to="/profiles" className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors flex items-center gap-1.5">
+            <Users className="w-4 h-4" /> Find Talent
           </Link>
         </div>
       </header>
@@ -88,16 +130,13 @@ const Employer = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="font-display text-2xl font-bold text-foreground">Employer Dashboard</h2>
-              <p className="text-muted-foreground text-sm mt-1">
-                Manage your listings and view applicants.
-              </p>
+              <p className="text-muted-foreground text-sm mt-1">Manage your listings and analyze applicants.</p>
             </div>
             <button
               onClick={() => setShowForm(!showForm)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-105 transition-transform"
             >
-              <Plus className="w-4 h-4" />
-              Post Job
+              <Plus className="w-4 h-4" /> Post Job
             </button>
           </div>
         </motion.div>
@@ -114,57 +153,28 @@ const Employer = () => {
             >
               <div className="card-gradient rounded-2xl border border-border p-5 mb-6 space-y-4">
                 <h3 className="font-display text-lg font-semibold text-foreground">New Job Listing</h3>
-
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className="text-xs text-muted-foreground font-medium">Job Title *</label>
-                    <input
-                      required
-                      value={form.title}
-                      onChange={(e) => setForm({ ...form, title: e.target.value })}
-                      placeholder="e.g. Frontend Developer"
-                      className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
+                    <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Frontend Developer" className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-muted-foreground font-medium">Company *</label>
-                    <input
-                      required
-                      value={form.company}
-                      onChange={(e) => setForm({ ...form, company: e.target.value })}
-                      placeholder="e.g. Acme Corp"
-                      className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
+                    <input required value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} placeholder="e.g. Acme Corp" className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-3 gap-3">
                   <div className="space-y-1.5">
                     <label className="text-xs text-muted-foreground font-medium">Location *</label>
-                    <input
-                      required
-                      value={form.location}
-                      onChange={(e) => setForm({ ...form, location: e.target.value })}
-                      placeholder="e.g. Remote"
-                      className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
+                    <input required value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="e.g. Remote" className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-muted-foreground font-medium">Salary</label>
-                    <input
-                      value={form.salary}
-                      onChange={(e) => setForm({ ...form, salary: e.target.value })}
-                      placeholder="e.g. $120k - $150k"
-                      className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
+                    <input value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} placeholder="e.g. $120k - $150k" className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-muted-foreground font-medium">Type</label>
-                    <select
-                      value={form.type}
-                      onChange={(e) => setForm({ ...form, type: e.target.value as Job["type"] })}
-                      className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
+                    <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as Job["type"] })} className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring">
                       <option value="Full-time">Full-time</option>
                       <option value="Part-time">Part-time</option>
                       <option value="Contract">Contract</option>
@@ -172,53 +182,23 @@ const Employer = () => {
                     </select>
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className="text-xs text-muted-foreground font-medium">Emoji Logo</label>
-                    <input
-                      value={form.logo}
-                      onChange={(e) => setForm({ ...form, logo: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
+                    <input value={form.logo} onChange={(e) => setForm({ ...form, logo: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-muted-foreground font-medium">Tags (comma-separated)</label>
-                    <input
-                      value={form.tags}
-                      onChange={(e) => setForm({ ...form, tags: e.target.value })}
-                      placeholder="React, TypeScript"
-                      className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
+                    <input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="React, TypeScript" className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
                 </div>
-
                 <div className="space-y-1.5">
                   <label className="text-xs text-muted-foreground font-medium">Description *</label>
-                  <textarea
-                    required
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    placeholder="Describe the role…"
-                    rows={3}
-                    className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                  />
+                  <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Describe the role…" rows={3} className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
                 </div>
-
                 <div className="flex gap-3 justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setShowForm(false)}
-                    className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-105 transition-transform"
-                  >
-                    Publish Listing
-                  </button>
+                  <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">Cancel</button>
+                  <button type="submit" className="px-5 py-2 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-105 transition-transform">Publish Listing</button>
                 </div>
               </div>
             </motion.form>
@@ -231,6 +211,9 @@ const Employer = () => {
             {postedJobs.map((job, i) => {
               const jobApplicants = applicants[job.id] || [];
               const isExpanded = expandedJob === job.id;
+              const isAnalyzed = analyzedJob === job.id;
+              const m = metrics[job.id] || { views: 0, swipesRight: 0, applications: 0 };
+              const avgScore = getAvgMatchScore(job.id);
 
               return (
                 <motion.div
@@ -241,7 +224,15 @@ const Employer = () => {
                   transition={{ delay: i * 0.03 }}
                   className="card-gradient rounded-xl border border-border overflow-hidden"
                 >
-                  <div className="p-4 flex items-center gap-3">
+                  {/* Metrics bar */}
+                  <div className="px-4 pt-3 flex gap-4 text-[11px] text-muted-foreground">
+                    <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {m.views} views</span>
+                    <span className="flex items-center gap-1"><TrendingUp className="w-3 h-3" /> {m.swipesRight} swipes</span>
+                    <span className="flex items-center gap-1"><Briefcase className="w-3 h-3" /> {m.applications} applied</span>
+                    <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {avgScore}% avg match</span>
+                  </div>
+
+                  <div className="p-4 pt-2 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-xl shrink-0">
                       {job.logo}
                     </div>
@@ -251,61 +242,81 @@ const Employer = () => {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <button
-                        onClick={() => setExpandedJob(isExpanded ? null : job.id)}
+                        onClick={() => {
+                          setAnalyzedJob(isAnalyzed ? null : job.id);
+                          setExpandedJob(null);
+                        }}
+                        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                          isAnalyzed
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-accent/15 text-accent hover:bg-accent/25"
+                        }`}
+                      >
+                        <Zap className="w-3.5 h-3.5" />
+                        Analyze
+                      </button>
+                      <button
+                        onClick={() => {
+                          setExpandedJob(isExpanded ? null : job.id);
+                          setAnalyzedJob(null);
+                        }}
                         className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium hover:bg-muted transition-colors"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         {jobApplicants.length}
                         {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                       </button>
-                      <button
-                        onClick={() => handleDelete(job.id)}
-                        className="p-1.5 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
-                      >
+                      <button onClick={() => handleDelete(job.id)} className="p-1.5 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
 
+                  {/* Regular applicant list */}
                   <AnimatePresence>
                     {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                         <div className="px-4 pb-4 border-t border-border pt-3">
-                          <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                            Applicants ({jobApplicants.length})
-                          </h5>
+                          <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Applicants ({jobApplicants.length})</h5>
                           {jobApplicants.length === 0 ? (
                             <p className="text-xs text-muted-foreground">No applicants yet.</p>
                           ) : (
                             <div className="space-y-2">
                               {jobApplicants.map((seeker) => (
-                                <div
-                                  key={seeker.id}
-                                  className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50"
-                                >
-                                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-sm">
-                                    {seeker.avatar}
-                                  </div>
+                                <div key={seeker.id} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+                                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-sm">{seeker.avatar}</div>
                                   <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-foreground">{seeker.name}</p>
                                     <p className="text-xs text-muted-foreground">{seeker.title} · {seeker.experience}</p>
                                   </div>
                                   <div className="flex gap-1 flex-wrap justify-end">
                                     {seeker.skills.slice(0, 2).map((skill) => (
-                                      <span
-                                        key={skill}
-                                        className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium"
-                                      >
-                                        {skill}
-                                      </span>
+                                      <span key={skill} className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium">{skill}</span>
                                     ))}
                                   </div>
                                 </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* AI Analysis view */}
+                  <AnimatePresence>
+                    {isAnalyzed && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                        <div className="px-4 pb-4 border-t border-border pt-3">
+                          <h5 className="text-xs font-semibold text-accent uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <Zap className="w-3.5 h-3.5" /> AI Match Analysis — Ranked by Score
+                          </h5>
+                          {rankedApplicants.length === 0 ? (
+                            <p className="text-xs text-muted-foreground">No applicants to analyze.</p>
+                          ) : (
+                            <div className="space-y-3">
+                              {rankedApplicants.map(({ seeker, match }, idx) => (
+                                <ApplicantAnalysisCard key={seeker.id} seeker={seeker} match={match} rank={idx + 1} />
                               ))}
                             </div>
                           )}
@@ -322,5 +333,36 @@ const Employer = () => {
     </div>
   );
 };
+
+// Sub-component for analyzed applicant card
+function ApplicantAnalysisCard({ seeker, match, rank }: { seeker: Seeker; match: MatchResult; rank: number }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="rounded-lg bg-secondary/50 border border-border overflow-hidden">
+      <button onClick={() => setExpanded(!expanded)} className="w-full p-3 flex items-center gap-3 text-left">
+        <span className="text-xs font-bold text-muted-foreground w-5">#{rank}</span>
+        <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-sm shrink-0">{seeker.avatar}</div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-foreground">{seeker.name}</p>
+          <p className="text-xs text-muted-foreground">{seeker.title} · {seeker.experience}</p>
+        </div>
+        <MatchBadge result={match} compact />
+        {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+      </button>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+            <div className="px-3 pb-3 pt-0 border-t border-border">
+              <div className="pt-3">
+                <MatchBadge result={match} />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default Employer;
