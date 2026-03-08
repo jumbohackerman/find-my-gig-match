@@ -52,6 +52,7 @@ const OnboardingModal = ({ open, onComplete, onClose }: Props) => {
         placeholder="np. Frontend Developer"
         className="w-full px-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
       />
+      {title.length === 0 && <p className="text-[11px] text-muted-foreground">Wpisz swoją główną rolę, aby kontynuować.</p>}
     </div>,
     // Step 1: Skills
     <div key="skills" className="space-y-3">
@@ -71,7 +72,7 @@ const OnboardingModal = ({ open, onComplete, onClose }: Props) => {
           </button>
         ))}
       </div>
-      <p className="text-xs text-muted-foreground">{skills.length}/8 wybranych</p>
+      <p className="text-xs text-muted-foreground">{skills.length}/8 wybranych{skills.length === 0 && " — wybierz co najmniej 1"}</p>
     </div>,
     // Step 2: Salary + Seniority
     <div key="salary" className="space-y-4">

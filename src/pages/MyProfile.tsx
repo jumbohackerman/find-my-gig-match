@@ -257,10 +257,11 @@ const MyProfile = () => {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-105 transition-transform disabled:opacity-50"
+            aria-busy={saving}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-105 transition-transform disabled:opacity-50 disabled:pointer-events-none"
           >
             <Save className="w-4 h-4" />
-            {saving ? "Zapisuję..." : "Zapisz profil"}
+            {saving ? "Zapisuję…" : "Zapisz profil"}
           </button>
         </div>
       </header>
