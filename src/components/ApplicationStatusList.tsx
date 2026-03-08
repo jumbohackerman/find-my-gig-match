@@ -10,7 +10,7 @@ interface Props {
   onJobClick?: (job: ApplicationWithJob["job"]) => void;
 }
 
-const ApplicationStatusList = ({ applications, loading }: Props) => {
+const ApplicationStatusList = ({ applications, loading, onJobClick }: Props) => {
   if (loading) {
     return (
       <div className="space-y-3">
