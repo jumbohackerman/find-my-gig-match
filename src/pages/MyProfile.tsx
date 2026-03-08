@@ -602,8 +602,7 @@ function AccordionSection({
           {badge && !isOpen && (
             <p className="text-[11px] text-muted-foreground truncate mt-0.5">{badge}</p>
           )}
-          )}
-          </div>
+        </div>
         <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
       {isOpen && (
