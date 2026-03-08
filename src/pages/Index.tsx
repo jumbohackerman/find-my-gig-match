@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Check, Star, RotateCcw, Loader2 } from "lucide-react";
@@ -10,6 +10,7 @@ import SavedList from "@/components/SavedList";
 import ApplicationStatusList from "@/components/ApplicationStatusList";
 import RecentlyViewedList from "@/components/RecentlyViewedList";
 import JobFilters from "@/components/JobFilters";
+import { defaultFilters, type JobFiltersState } from "@/components/JobFilters";
 import OnboardingModal from "@/components/OnboardingModal";
 import JobDetailModal from "@/components/JobDetailModal";
 import type { Job } from "@/domain/models";
@@ -21,6 +22,41 @@ import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 
 type Tab = "swipe" | "applied" | "saved" | "recent";
 const VALID_TABS: Tab[] = ["swipe", "applied", "saved", "recent"];
+
+// ── Filter ↔ URL helpers ────────────────────────────────────────────────────
+
+const FILTER_PARAMS = ["loc", "type", "salary", "remote", "seniority", "skills"] as const;
+
+function filtersFromParams(sp: URLSearchParams): Partial<JobFiltersState> {
+  const f: Partial<JobFiltersState> = {};
+  const loc = sp.get("loc");
+  if (loc) f.location = loc;
+  const type = sp.get("type");
+  if (type) f.type = type;
+  const salary = sp.get("salary");
+  if (salary && !isNaN(Number(salary))) f.salaryMin = Number(salary);
+  const remote = sp.get("remote");
+  if (remote) f.remote = remote;
+  const seniority = sp.get("seniority");
+  if (seniority) f.seniority = seniority;
+  const skills = sp.get("skills");
+  if (skills) f.requiredSkills = skills.split(",").filter(Boolean);
+  return f;
+}
+
+function filtersToParams(f: JobFiltersState, sp: URLSearchParams): URLSearchParams {
+  const next = new URLSearchParams(sp);
+  // Remove all filter keys first
+  FILTER_PARAMS.forEach((k) => next.delete(k));
+  // Write only non-default values
+  if (f.location !== defaultFilters.location) next.set("loc", f.location);
+  if (f.type !== defaultFilters.type) next.set("type", f.type);
+  if (f.salaryMin > 0) next.set("salary", String(f.salaryMin));
+  if (f.remote !== defaultFilters.remote) next.set("remote", f.remote);
+  if (f.seniority !== defaultFilters.seniority) next.set("seniority", f.seniority);
+  if (f.requiredSkills.length > 0) next.set("skills", f.requiredSkills.join(","));
+  return next;
+}
 
 const Index = () => {
   useAuth();
@@ -47,6 +83,24 @@ const Index = () => {
     updateFilters,
     actionPending,
   } = useJobFeed();
+
+  // ── Restore filters from URL on mount ─────────────────────────────────────
+  const initializedFilters = useRef(false);
+  useEffect(() => {
+    if (initializedFilters.current) return;
+    initializedFilters.current = true;
+    const urlFilters = filtersFromParams(searchParams);
+    if (Object.keys(urlFilters).length > 0) {
+      updateFilters({ ...defaultFilters, ...urlFilters });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Sync filter changes → URL ─────────────────────────────────────────────
+  const handleFiltersChange = useCallback((newFilters: JobFiltersState) => {
+    updateFilters(newFilters);
+    setSearchParams((prev) => filtersToParams(newFilters, prev), { replace: true });
+  }, [updateFilters, setSearchParams]);
 
   // ── Deep-link: tab ────────────────────────────────────────────────────────
   const tabParam = searchParams.get("tab") as Tab | null;
@@ -222,7 +276,7 @@ const Index = () => {
           </motion.div>
         ) : (
           <>
-            <JobFilters filters={filters} onChange={updateFilters} />
+            <JobFilters filters={filters} onChange={handleFiltersChange} />
 
             {filteredJobs.length === 0 ? (
               <div className="text-center py-12">
