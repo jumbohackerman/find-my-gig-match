@@ -17,6 +17,8 @@ import type {
   NotificationRepository,
   ProfileRepository,
   PreferencesRepository,
+  SavedJobRepository,
+  SwipeEventRepository,
 } from "@/repositories/interfaces";
 
 import type {
@@ -35,6 +37,8 @@ import { mockMessageRepository } from "@/repositories/mock/messages";
 import { mockNotificationRepository } from "@/repositories/mock/notifications";
 import { mockProfileRepository } from "@/repositories/mock/profiles";
 import { mockPreferencesRepository } from "@/repositories/mock/preferences";
+import { mockSavedJobRepository } from "@/repositories/mock/savedJobs";
+import { mockSwipeEventRepository } from "@/repositories/mock/swipeEvents";
 import {
   noopAnalytics,
   noopErrorTracking,
@@ -53,6 +57,8 @@ interface ProviderMap {
   notifications: NotificationRepository;
   profiles: ProfileRepository;
   preferences: PreferencesRepository;
+  savedJobs: SavedJobRepository;
+  swipeEvents: SwipeEventRepository;
   analytics: AnalyticsService;
   errorTracking: ErrorTrackingService;
   email: EmailService;
@@ -69,6 +75,8 @@ const providers: ProviderMap = {
   notifications: mockNotificationRepository,
   profiles: mockProfileRepository,
   preferences: mockPreferencesRepository,
+  savedJobs: mockSavedJobRepository,
+  swipeEvents: mockSwipeEventRepository,
 
   // External services — currently no-op, swap to real providers later
   analytics: noopAnalytics,
