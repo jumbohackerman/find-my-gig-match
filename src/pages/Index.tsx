@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Check, Star, RotateCcw, Loader2 } from "lucide-react";
 import { SwipeCardSkeleton, EmptyView } from "@/components/StateViews";
@@ -11,15 +12,17 @@ import JobFilters from "@/components/JobFilters";
 import OnboardingModal from "@/components/OnboardingModal";
 import JobDetailModal from "@/components/JobDetailModal";
 import type { Job } from "@/domain/models";
-import { useAuth } from "@/hooks/useAuth"; // kept for potential future use
+import { useAuth } from "@/hooks/useAuth";
 import { useCandidateApplications } from "@/hooks/useApplications";
 import { useJobFeed } from "@/hooks/useJobFeed";
 import { useOnboarding } from "@/hooks/useOnboarding";
 
 type Tab = "swipe" | "applied" | "saved";
+const VALID_TABS: Tab[] = ["swipe", "applied", "saved"];
 
 const Index = () => {
-  useAuth(); // ensure auth context is available
+  useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { applications: dbApplications, loading: appsLoading, refetch: refetchApps } = useCandidateApplications();
   const { showOnboarding, completeOnboarding, dismissOnboarding } = useOnboarding();
 
@@ -42,9 +45,55 @@ const Index = () => {
     actionPending,
   } = useJobFeed();
 
-  const [activeTab, setActiveTab] = useState<Tab>("swipe");
+  // ── Deep-link: tab ────────────────────────────────────────────────────────
+  const tabParam = searchParams.get("tab") as Tab | null;
+  const [activeTab, setActiveTab] = useState<Tab>(
+    tabParam && VALID_TABS.includes(tabParam) ? tabParam : "swipe"
+  );
+
+  const changeTab = useCallback((tab: Tab) => {
+    setActiveTab(tab);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (tab === "swipe") next.delete("tab");
+      else next.set("tab", tab);
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  // ── Deep-link: job detail modal ───────────────────────────────────────────
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [buttonExitDir, setButtonExitDir] = useState<"left" | "right" | null>(null);
+
+  const openJobModal = useCallback((job: Job | null) => {
+    setSelectedJob(job);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (job) next.set("job", job.id);
+      else next.delete("job");
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const closeJobModal = useCallback(() => openJobModal(null), [openJobModal]);
+
+  // Restore job modal from URL on data load
+  useEffect(() => {
+    if (jobsLoading || allJobs.length === 0) return;
+    const jobId = searchParams.get("job");
+    if (jobId && !selectedJob) {
+      const found = allJobs.find((j) => j.id === jobId);
+      if (found) setSelectedJob(found);
+      else {
+        // Invalid job id — clean up URL
+        setSearchParams((prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete("job");
+          return next;
+        }, { replace: true });
+      }
+    }
+  }, [jobsLoading, allJobs, searchParams, selectedJob, setSearchParams]);
 
   // Refetch applications after apply (swipe triggers applyToJob inside useJobFeed)
   const handleSwipeWithRefetch = async (direction: "left" | "right" | "save") => {
