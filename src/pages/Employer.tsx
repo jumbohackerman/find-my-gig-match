@@ -77,7 +77,7 @@ const Employer = () => {
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const [analyzedJob, setAnalyzedJob] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [selectedCandidate, setSelectedCandidate] = useState<{ seeker: ExtendedSeeker; match: MatchResult } | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<{ candidate: Candidate; match: MatchResult } | null>(null);
   const [chatOpen, setChatOpen] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [replacingFor, setReplacingFor] = useState<{ jobId: string; appId: string; source: string } | null>(null);
@@ -141,8 +141,8 @@ const Employer = () => {
     if (app.status === "applied") {
       handleAdvanceStatus(app.id, "viewed");
     }
-    const seeker = appToSeeker(app);
-    setSelectedCandidate({ seeker, match: app.matchResult! });
+    const cand = appToCandidate(app);
+    setSelectedCandidate({ candidate: cand, match: app.matchResult! });
   }, [handleAdvanceStatus]);
 
   const handleGenerateShortlist = useCallback(async (jobId: string) => {
@@ -536,7 +536,7 @@ const Employer = () => {
       </main>
 
       <CandidateProfileModal
-        seeker={selectedCandidate?.seeker || null}
+        candidate={selectedCandidate?.candidate || null}
         match={selectedCandidate?.match}
         onClose={() => setSelectedCandidate(null)}
       />
