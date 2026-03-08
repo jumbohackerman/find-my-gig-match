@@ -10,6 +10,7 @@ import OnboardingModal from "@/components/OnboardingModal";
 import JobDetailModal from "@/components/JobDetailModal";
 import type { Job } from "@/domain/models";
 import { useAuth } from "@/hooks/useAuth";
+import { useRequireRole } from "@/hooks/useRequireRole";
 import { useCandidateApplications } from "@/hooks/useApplications";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useJobFeed } from "@/hooks/useJobFeed";
