@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import { createFallbackCandidate } from "@/data/defaults";
 import { Link } from "react-router-dom";
@@ -25,6 +25,7 @@ import type { ApplicationStatus } from "@/types/application";
 import { useAuth } from "@/hooks/useAuth";
 import { hideJob, unhideJob } from "@/lib/moderation";
 import { toast } from "sonner";
+import { timeAgo } from "@/lib/timeAgo";
 
 const Employer = () => {
   const { user } = useAuth();
@@ -248,6 +249,16 @@ const Employer = () => {
                       <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> {aiCount} AI</span>
                       <span className="flex items-center gap-1"><UserCheck className="w-3 h-3" /> {employerPickCount} wybrane</span>
                       <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {avgScore}% średnia</span>
+                      {jobApps.length > 0 && (() => {
+                        const newest = jobApps.reduce((latest, a) =>
+                          new Date(a.appliedAt) > new Date(latest.appliedAt) ? a : latest
+                        );
+                        return (
+                          <span className="flex items-center gap-1 ml-auto text-muted-foreground/70">
+                            Ostatnia: {timeAgo(newest.appliedAt)}
+                          </span>
+                        );
+                      })()}
                     </div>
 
                     <div className="p-4 pt-2">
@@ -563,6 +574,11 @@ function CandidateCard({
             <span className={`text-[10px] font-medium ${activity.color}`}>{activity.label}</span>
             <StatusBadge status={app.status as ApplicationStatus} />
             {app.source !== "candidate" && <SourceLabel source={app.source as any} />}
+            {chatMessages.length > 0 && (
+              <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5">
+                💬 {chatMessages.length}
+              </span>
+            )}
           </div>
         </div>
         {matchResult && <MatchBadge result={matchResult} compact />}

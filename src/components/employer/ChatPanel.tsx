@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Send, MessageSquare, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { timeAgo } from "@/lib/timeAgo";
 import EmptyState from "./EmptyState";
 
 export interface ChatMessage {
@@ -89,6 +90,9 @@ const ChatPanel = ({ messages, onSend, candidateName, isUnlocked, onUnlock, curr
                 >
                   <p className="text-[10px] font-semibold mb-0.5 opacity-70">{msg.senderName}</p>
                   <p>{msg.content}</p>
+                  <p className={`text-[9px] mt-0.5 ${
+                    (currentUserId && msg.senderId === currentUserId) ? "opacity-50" : "text-muted-foreground/50"
+                  }`}>{timeAgo(msg.createdAt)}</p>
                 </div>
               </motion.div>
             ))}
