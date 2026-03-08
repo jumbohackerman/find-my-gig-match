@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Briefcase, Search } from "lucide-react";
+import { Briefcase, Search, Users } from "lucide-react";
 import { motion } from "framer-motion";
+import { CardSkeleton, EmptyView } from "@/components/StateViews";
 import SeekerCard from "@/components/SeekerCard";
 import CandidateProfileModal from "@/components/CandidateProfileModal";
 import { useCandidates } from "@/hooks/useCandidates";
@@ -62,13 +63,15 @@ const Profiles = () => {
         </motion.div>
 
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground text-sm">Ładowanie profili...</p>
+          <div className="flex flex-col gap-4">
+            {[1, 2, 3].map((i) => <CardSkeleton key={i} />)}
           </div>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-muted-foreground text-sm py-12">
-            Brak profili pasujących do wyszukiwania.
-          </p>
+          <EmptyView
+            icon={<Users className="w-6 h-6 text-muted-foreground" />}
+            title={search.trim() ? "Brak wyników" : "Brak kandydatów"}
+            description={search.trim() ? "Spróbuj zmienić kryteria wyszukiwania." : "Kandydaci pojawią się tutaj gdy zaaplikują na Twoje oferty."}
+          />
         ) : (
           <div className="flex flex-col gap-4">
             {filtered.map((candidate, i) => (
