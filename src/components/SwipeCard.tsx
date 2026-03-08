@@ -94,7 +94,7 @@ const SwipeCard = ({ job, onSwipe, isTop, matchResult, isSaved, onTap }: SwipeCa
             </div>
             <div className="flex-1">
               <h3 className="font-display text-sm text-muted-foreground">{job.company}</h3>
-              <p className="text-xs text-muted-foreground">{job.posted}</p>
+              <p className="text-xs text-muted-foreground">{formatPosted(job.posted)}</p>
             </div>
             <div className="flex items-center gap-2">
               {isSaved && (
@@ -145,7 +145,7 @@ const SwipeCard = ({ job, onSwipe, isTop, matchResult, isSaved, onTap }: SwipeCa
             </div>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-              {job.posted}
+              {formatPosted(job.posted)}
             </div>
           </div>
 
