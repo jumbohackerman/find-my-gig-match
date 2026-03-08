@@ -1,15 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Briefcase, Mail, Lock, User, ArrowRight, ArrowLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 type Mode = "login" | "signup" | "forgot";
 type Role = "candidate" | "employer";
 
 const Auth = () => {
+  const { user, profile, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Redirect already-authenticated users to their home
+  useEffect(() => {
+    if (authLoading) return;
+    if (user && profile) {
+      navigate(profile.role === "employer" ? "/employer" : "/", { replace: true });
+    }
+  }, [user, profile, authLoading, navigate]);
   const navigate = useNavigate();
   const location = useLocation();
   const defaultRole = (location.state as any)?.defaultRole;
