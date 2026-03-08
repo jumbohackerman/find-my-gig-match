@@ -1,10 +1,10 @@
 /**
  * Employer-side hook for candidate messaging.
  * Uses the message repository — backend-agnostic.
- * Manages per-application chat state and unlock logic.
+ * Manages per-application chat state, unlock logic, and realtime subscriptions.
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { getProvider } from "@/providers/registry";
 import type { Message } from "@/domain/models";
 
@@ -32,6 +32,45 @@ function toChatMessage(msg: Message, senderName: string): ChatMessage {
 export function useEmployerMessages(employerId: string | undefined) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [unlockedChats, setUnlockedChats] = useState<Set<string>>(new Set());
+  const subscriptionsRef = useRef<Map<string, () => void>>(new Map());
+
+  // Cleanup all subscriptions on unmount
+  useEffect(() => {
+    return () => {
+      subscriptionsRef.current.forEach((unsub) => unsub());
+      subscriptionsRef.current.clear();
+    };
+  }, []);
+
+  const subscribeToApplication = useCallback(
+    (applicationId: string) => {
+      // Don't double-subscribe
+      if (subscriptionsRef.current.has(applicationId)) return;
+
+      const unsub = getProvider("messages").subscribe(applicationId, (msg) => {
+        const chatMsg = toChatMessage(
+          msg,
+          msg.senderId === employerId ? "Ty" : "Kandydat",
+        );
+        setMessages((prev) => {
+          // Deduplicate — optimistic send may already have this message
+          if (prev.some((m) => m.id === chatMsg.id)) return prev;
+          return [...prev, chatMsg];
+        });
+      });
+
+      subscriptionsRef.current.set(applicationId, unsub);
+    },
+    [employerId],
+  );
+
+  const unsubscribeFromApplication = useCallback((applicationId: string) => {
+    const unsub = subscriptionsRef.current.get(applicationId);
+    if (unsub) {
+      unsub();
+      subscriptionsRef.current.delete(applicationId);
+    }
+  }, []);
 
   const loadMessages = useCallback(
     async (applicationId: string) => {
@@ -44,24 +83,53 @@ export function useEmployerMessages(employerId: string | undefined) {
         const other = prev.filter((m) => m.applicationId !== applicationId);
         return [...other, ...chatMsgs];
       });
+
+      // Auto-subscribe to realtime after loading
+      subscribeToApplication(applicationId);
     },
-    [employerId],
+    [employerId, subscribeToApplication],
   );
 
   const sendMessage = useCallback(
     async (applicationId: string, content: string) => {
       if (!employerId) return;
-      const repo = getProvider("messages");
-      const msg = await repo.send(applicationId, employerId, content);
-      const chatMsg = toChatMessage(msg, "Ty");
-      setMessages((prev) => [...prev, chatMsg]);
+
+      // Optimistic update with temp ID
+      const tempId = `temp-${Date.now()}`;
+      const optimistic: ChatMessage = {
+        id: tempId,
+        applicationId,
+        senderId: employerId,
+        senderName: "Ty",
+        content,
+        createdAt: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, optimistic]);
+
+      try {
+        const repo = getProvider("messages");
+        const msg = await repo.send(applicationId, employerId, content);
+        // Replace optimistic message with server-confirmed one
+        setMessages((prev) =>
+          prev.map((m) => (m.id === tempId ? toChatMessage(msg, "Ty") : m)),
+        );
+      } catch (err) {
+        // Remove optimistic message on failure
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
+        throw err;
+      }
     },
     [employerId],
   );
 
-  const unlockChat = useCallback((applicationId: string) => {
-    setUnlockedChats((prev) => new Set(prev).add(applicationId));
-  }, []);
+  const unlockChat = useCallback(
+    (applicationId: string) => {
+      setUnlockedChats((prev) => new Set(prev).add(applicationId));
+      // Start listening for realtime messages when chat is unlocked
+      subscribeToApplication(applicationId);
+    },
+    [subscribeToApplication],
+  );
 
   const isChatOpen = useCallback(
     (applicationId: string) =>
@@ -72,7 +140,9 @@ export function useEmployerMessages(employerId: string | undefined) {
 
   const getMessages = useCallback(
     (applicationId: string) =>
-      messages.filter((m) => m.applicationId === applicationId),
+      messages
+        .filter((m) => m.applicationId === applicationId)
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
     [messages],
   );
 
@@ -83,5 +153,6 @@ export function useEmployerMessages(employerId: string | undefined) {
     isChatOpen,
     getMessages,
     loadMessages,
+    unsubscribeFromApplication,
   };
 }

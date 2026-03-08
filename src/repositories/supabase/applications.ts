@@ -145,6 +145,54 @@ export const supabaseApplicationRepository: ApplicationRepository = {
   },
 
   async apply(job: Job, candidateId: string, source = "candidate"): Promise<Application> {
+    // Detect if the job ID is already a real UUID (from Supabase) vs a static numeric ID
+    const isRealUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(job.id);
+
+    if (isRealUuid) {
+      // Job already exists in DB — direct insert
+      // Check for existing application first
+      const { data: existing } = await supabase
+        .from("applications")
+        .select("id")
+        .eq("candidate_id", candidateId)
+        .eq("job_id", job.id)
+        .maybeSingle();
+
+      if (existing) {
+        return {
+          id: existing.id,
+          jobId: job.id,
+          candidateId,
+          status: "applied",
+          source: source as ApplicationSource,
+          appliedAt: new Date().toISOString(),
+        };
+      }
+
+      const { data, error } = await supabase
+        .from("applications")
+        .insert({
+          candidate_id: candidateId,
+          job_id: job.id,
+          source,
+          status: "applied",
+        })
+        .select()
+        .single();
+
+      if (error) throw new Error(`Failed to apply: ${error.message}`);
+
+      return {
+        id: data.id,
+        jobId: data.job_id,
+        candidateId: data.candidate_id,
+        status: data.status as ApplicationStatus,
+        source: data.source as ApplicationSource,
+        appliedAt: data.applied_at,
+      };
+    }
+
+    // Static/demo job — use RPC to upsert job row + create application atomically
     const { data, error } = await supabase.rpc("apply_to_job", {
       _static_job_id: job.id,
       _job_title: job.title,

@@ -18,9 +18,10 @@ interface Props {
   candidateName: string;
   isUnlocked: boolean;
   onUnlock: () => void;
+  currentUserId?: string;
 }
 
-const ChatPanel = ({ messages, onSend, candidateName, isUnlocked, onUnlock }: Props) => {
+const ChatPanel = ({ messages, onSend, candidateName, isUnlocked, onUnlock, currentUserId }: Props) => {
   const [text, setText] = useState("");
 
   const handleSend = () => {
@@ -61,11 +62,11 @@ const ChatPanel = ({ messages, onSend, candidateName, isUnlocked, onUnlock }: Pr
                 key={msg.id}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`flex ${msg.senderId === "employer" ? "justify-end" : "justify-start"}`}
+                className={`flex ${(currentUserId && msg.senderId === currentUserId) ? "justify-end" : "justify-start"}`}
               >
                 <div
                   className={`px-3 py-1.5 rounded-xl max-w-[80%] text-xs ${
-                    msg.senderId === "employer"
+                    (currentUserId && msg.senderId === currentUserId)
                       ? "bg-primary text-primary-foreground"
                       : "bg-secondary text-secondary-foreground"
                   }`}
