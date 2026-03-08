@@ -20,6 +20,11 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Determine where to send user after auth based on role
+  const getPostAuthRedirect = (userRole?: string) => {
+    return userRole === "employer" ? "/employer" : "/";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -44,14 +49,20 @@ const Auth = () => {
         if (error) throw error;
 
         if (data.session) {
-          navigate("/");
+          navigate(getPostAuthRedirect(role));
         } else {
           toast.success("Sprawdź email, aby potwierdzić konto!");
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate("/");
+        // Fetch profile role to redirect correctly
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .maybeSingle();
+        navigate(getPostAuthRedirect(profileData?.role));
       }
     } catch (err: any) {
       toast.error(err.message || "Coś poszło nie tak");
