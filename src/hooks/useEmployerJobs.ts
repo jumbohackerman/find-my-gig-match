@@ -38,7 +38,6 @@ export function useEmployerJobs() {
     try {
       const job = await getProvider("jobs").create({
         ...form,
-        posted: "Właśnie dodano",
         employerId,
       });
       toast.success("Ogłoszenie opublikowane");
