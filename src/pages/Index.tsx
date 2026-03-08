@@ -169,6 +169,7 @@ const Index = () => {
                         matchResult={matchResults[job.id]}
                         isSaved={savedJobIds.has(job.id)}
                         onTap={() => setSelectedJob(job)}
+                        forcedExitDirection={i === 0 ? buttonExitDir : null}
                       />
                     ))}
                   </AnimatePresence>
