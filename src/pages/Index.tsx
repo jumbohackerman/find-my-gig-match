@@ -86,7 +86,6 @@ const Index = () => {
 
       if (direction === "right") {
         setAppliedJobs((prev) => (prev.some((j) => j.id === job.id) ? prev : [job, ...prev]));
-        setDemoStatuses((prev) => ({ ...prev, [job.id]: "applied" }));
       } else if (direction === "save") {
         setSavedJobs((prev) => (prev.some((j) => j.id === job.id) ? prev : [job, ...prev]));
       } else {
