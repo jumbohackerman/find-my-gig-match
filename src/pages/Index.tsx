@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Check, Star, RotateCcw, Loader2 } from "lucide-react";
+import { X, Check, Star, RotateCcw, Loader2, SlidersHorizontal, Bookmark, Filter } from "lucide-react";
 import { SwipeCardSkeleton, EmptyView } from "@/components/StateViews";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -257,21 +257,44 @@ const Index = () => {
             <RecentlyViewedList entries={recentEntries} onJobClick={openJobModal} onClear={clearRecent} />
           </motion.div>
         ) : isFinished ? (
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center w-full max-w-xs mx-auto">
             <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4 text-4xl">
               🎉
             </div>
             <h2 className="font-display text-2xl font-bold text-foreground mb-2">Wszystko przejrzane!</h2>
-            <p className="text-muted-foreground text-sm mb-2">
-              Przejrzano {filteredJobs.length} ofert, zapisano {savedJobs.length}.
+            <p className="text-muted-foreground text-sm mb-1">
+              Przejrzano {filteredJobs.length} ofert{filteredJobs.length === 1 ? "ę" : ""}.
             </p>
-            <div className="flex gap-3 mt-6 justify-center">
+            {(savedJobs.length > 0 || dbApplications.length > 0) && (
+              <p className="text-muted-foreground text-xs mb-4">
+                {savedJobs.length > 0 && `${savedJobs.length} zapisanych`}
+                {savedJobs.length > 0 && dbApplications.length > 0 && " · "}
+                {dbApplications.length > 0 && `${dbApplications.length} aplikacji`}
+              </p>
+            )}
+            <div className="flex flex-col gap-2 mt-5">
               <button
                 onClick={resetFeed}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-[1.02] transition-transform"
               >
                 <RotateCcw className="w-4 h-4" /> Zacznij od nowa
               </button>
+              {hasActiveFilters && (
+                <button
+                  onClick={() => { handleFiltersChange({ ...defaultFilters }); }}
+                  className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors"
+                >
+                  <SlidersHorizontal className="w-4 h-4" /> Zmień filtry
+                </button>
+              )}
+              {savedJobs.length > 0 && (
+                <button
+                  onClick={() => changeTab("saved")}
+                  className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors"
+                >
+                  <Bookmark className="w-4 h-4" /> Przeglądaj zapisane ({savedJobs.length})
+                </button>
+              )}
             </div>
           </motion.div>
         ) : (
@@ -279,9 +302,29 @@ const Index = () => {
             <JobFilters filters={filters} onChange={handleFiltersChange} />
 
             {filteredJobs.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-sm">Brak ofert pasujących do filtrów.</p>
-              </div>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12 w-full max-w-xs mx-auto">
+                <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4 text-3xl">
+                  🔍
+                </div>
+                <h3 className="font-display text-lg font-bold text-foreground mb-1">Brak pasujących ofert</h3>
+                <p className="text-muted-foreground text-sm mb-5">Spróbuj zmienić kryteria wyszukiwania.</p>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => handleFiltersChange({ ...defaultFilters })}
+                    className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-[1.02] transition-transform"
+                  >
+                    <Filter className="w-4 h-4" /> Wyczyść filtry
+                  </button>
+                  {savedJobs.length > 0 && (
+                    <button
+                      onClick={() => changeTab("saved")}
+                      className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors"
+                    >
+                      <Bookmark className="w-4 h-4" /> Zapisane oferty ({savedJobs.length})
+                    </button>
+                  )}
+                </div>
+              </motion.div>
             ) : (
               <div className="flex-1 flex flex-col items-center min-h-0 w-full">
                 {/* Card stack — overflow-visible allows exit animation to fly beyond container */}
