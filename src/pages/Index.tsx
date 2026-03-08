@@ -65,8 +65,15 @@ const Index = () => {
       remotePreference: data.remotePreference,
       seniority: data.seniority,
     };
-    setCandidateProfile(newProfile);
-    if (user) localStorage.setItem(`onboarded_${user.id}`, "true");
+    setCandidateProfile({
+      ...candidateProfile,
+      title: data.title,
+      skills: data.skills,
+      salaryMin: data.salaryMin,
+      salaryMax: data.salaryMax,
+      workMode: data.remotePreference as any,
+      seniority: data.seniority as Candidate["seniority"],
+    });
     setShowOnboarding(false);
   };
 
