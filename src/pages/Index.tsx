@@ -5,12 +5,14 @@ import { X, Check, Star, Briefcase, RotateCcw, Users, Building2, LogOut, User, B
 import SwipeCard from "@/components/SwipeCard";
 import AppliedList from "@/components/AppliedList";
 import SavedList from "@/components/SavedList";
+import ApplicationStatusList from "@/components/ApplicationStatusList";
 import JobFilters, { filterJobs, defaultFilters, type JobFiltersState } from "@/components/JobFilters";
 import OnboardingModal from "@/components/OnboardingModal";
 import DemoBanner from "@/components/DemoBanner";
 import JobDetailModal from "@/components/JobDetailModal";
 import { jobs, type Job } from "@/data/jobs";
 import { useAuth } from "@/hooks/useAuth";
+import { useCandidateApplications } from "@/hooks/useApplications";
 import { calculateMatch, DEMO_CANDIDATE, type CandidateProfile, type MatchResult } from "@/lib/matchScoring";
 
 type Tab = "swipe" | "applied" | "saved";
