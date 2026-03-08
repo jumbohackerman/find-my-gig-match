@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Briefcase, Building2, Users, User, LogOut, Bell, Search } from "lucide-react";
+import { timeAgo } from "@/lib/timeAgo";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -148,8 +149,16 @@ const Navbar = () => {
                           role="listitem"
                           className={`p-3 border-b border-border last:border-0 ${n.read ? "" : "bg-accent/5"}`}
                         >
-                          <p className="text-xs font-medium text-foreground">{n.title}</p>
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-xs font-medium text-foreground">{n.title}</p>
+                            {!n.read && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" aria-label="Nieprzeczytane" />
+                            )}
+                          </div>
                           <p className="text-[10px] text-muted-foreground mt-0.5">{n.body}</p>
+                          {n.createdAt && (
+                            <p className="text-[9px] text-muted-foreground/60 mt-1">{timeAgo(n.createdAt)}</p>
+                          )}
                         </div>
                       ))}
                     </div>

@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import StatusPipeline from "@/components/employer/StatusPipeline";
 import { STATUS_LABELS, STATUS_COLORS, type ApplicationStatus } from "@/types/application";
 import type { ApplicationWithJob } from "@/hooks/useApplications";
+import { timeAgo } from "@/lib/timeAgo";
 
 interface Props {
   applications: ApplicationWithJob[];
@@ -57,12 +58,17 @@ const ApplicationStatusList = ({ applications, loading, onJobClick }: Props) => 
                   <p className="text-xs text-muted-foreground">
                     {job.company} · {job.location}
                   </p>
-                  <div className="mt-1">
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <span
                       className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${STATUS_COLORS[status] || "bg-secondary text-secondary-foreground"}`}
                     >
-                      Status: {STATUS_LABELS[status] || status}
+                      {STATUS_LABELS[status] || status}
                     </span>
+                    {app.appliedAt && (
+                      <span className="text-[10px] text-muted-foreground/70">
+                        {timeAgo(app.appliedAt)}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
