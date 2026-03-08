@@ -6,6 +6,7 @@ import {
 import type { Job } from "@/domain/models";
 import type { MatchResult } from "@/lib/matchScoring";
 import MatchBadge from "@/components/MatchBadge";
+import ReportButton from "@/components/ReportButton";
 
 function formatPostedDate(raw: string): string {
   if (!raw) return "";
@@ -47,12 +48,12 @@ const JobDetailModal = ({ job, matchResult, onClose, onApply }: Props) => {
           className="w-full max-w-lg max-h-[85vh] overflow-y-auto card-gradient rounded-2xl border border-border p-5 relative"
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground z-10"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+            <ReportButton targetType="job" targetId={job.id} targetLabel={`${job.title} — ${job.company}`} />
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
           {/* Header */}
           <div className="flex items-center gap-4 mb-4">

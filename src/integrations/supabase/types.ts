@@ -49,6 +49,36 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
       candidates: {
         Row: {
           availability: string
@@ -261,6 +291,42 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          reporter_id: string
+          reviewed_at: string | null
+          reviewer_notes: string | null
+          status: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string
+          reporter_id: string
+          reviewed_at?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          reporter_id?: string
+          reviewed_at?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
       saved_jobs: {
         Row: {
           created_at: string
@@ -366,6 +432,8 @@ export type Database = {
         Returns: string
       }
       get_user_role: { Args: { _user_id: string }; Returns: string }
+      hide_job: { Args: { _job_id: string }; Returns: undefined }
+      unhide_job: { Args: { _job_id: string }; Returns: undefined }
     }
     Enums: {
       notification_type:

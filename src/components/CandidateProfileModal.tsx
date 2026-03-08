@@ -6,6 +6,7 @@ import {
 import type { Candidate, MatchResult } from "@/domain/models";
 import { getActivityLabel } from "@/domain/models";
 import MatchBadge from "@/components/MatchBadge";
+import ReportButton from "@/components/ReportButton";
 
 interface Props {
   candidate: Candidate | null;
@@ -32,9 +33,12 @@ const CandidateProfileModal = ({ candidate, match, onClose }: Props) => {
           className="w-full max-w-lg max-h-[85vh] overflow-y-auto card-gradient rounded-2xl border border-border p-5 relative"
           onClick={(e) => e.stopPropagation()}
         >
-          <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground z-10">
-            <X className="w-5 h-5" />
-          </button>
+          <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+            <ReportButton targetType="profile" targetId={candidate.id} targetLabel={candidate.name} />
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
           {/* Hero */}
           <div className="flex items-center gap-4 mb-4">
