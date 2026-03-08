@@ -11,7 +11,9 @@ import JobDetailModal from "@/components/JobDetailModal";
 import { jobs, type Job } from "@/data/jobs";
 import { useAuth } from "@/hooks/useAuth";
 import { useCandidateApplications } from "@/hooks/useApplications";
+import { supabase } from "@/integrations/supabase/client";
 import { calculateMatch, DEMO_CANDIDATE, type CandidateProfile, type MatchResult } from "@/lib/matchScoring";
+import { toast } from "sonner";
 
 type Tab = "swipe" | "applied" | "saved";
 
@@ -24,7 +26,7 @@ interface Notification {
 
 const Index = () => {
   const { signOut, user, profile } = useAuth();
-  const { applications: dbApplications, loading: appsLoading } = useCandidateApplications();
+  const { applications: dbApplications, loading: appsLoading, refetch: refetchApps } = useCandidateApplications();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [appliedJobs, setAppliedJobs] = useState<Job[]>([]);
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
@@ -79,6 +81,32 @@ const Index = () => {
   const remainingJobs = filteredJobs.slice(currentIndex);
   const isFinished = currentIndex >= filteredJobs.length;
 
+  const applyToJob = useCallback(async (job: Job) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase.rpc("apply_to_job", {
+        _static_job_id: job.id,
+        _job_title: job.title,
+        _job_company: job.company,
+        _job_location: job.location,
+        _job_logo: job.logo,
+        _job_salary: job.salary,
+        _job_tags: job.tags,
+        _job_type: job.type,
+        _job_description: job.description,
+      });
+      if (error) {
+        console.error("Apply error:", error);
+        toast.error("Nie udało się zaaplikować");
+      } else {
+        toast.success(`Zaaplikowano na: ${job.title}`);
+        refetchApps();
+      }
+    } catch (err) {
+      console.error("Apply error:", err);
+    }
+  }, [user, refetchApps]);
+
   const handleSwipe = useCallback(
     (direction: "left" | "right" | "save") => {
       const job = filteredJobs[currentIndex];
@@ -86,6 +114,7 @@ const Index = () => {
 
       if (direction === "right") {
         setAppliedJobs((prev) => (prev.some((j) => j.id === job.id) ? prev : [job, ...prev]));
+        applyToJob(job);
       } else if (direction === "save") {
         setSavedJobs((prev) => (prev.some((j) => j.id === job.id) ? prev : [job, ...prev]));
       } else {
@@ -93,12 +122,13 @@ const Index = () => {
       }
       setCurrentIndex((prev) => prev + 1);
     },
-    [currentIndex, filteredJobs]
+    [currentIndex, filteredJobs, applyToJob]
   );
 
   const handleSavedApply = (job: Job) => {
     setSavedJobs((prev) => prev.filter((j) => j.id !== job.id));
     setAppliedJobs((prev) => (prev.some((j) => j.id === job.id) ? prev : [job, ...prev]));
+    applyToJob(job);
   };
 
   const handleReset = () => {
@@ -121,7 +151,7 @@ const Index = () => {
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
     { key: "swipe", label: "Przeglądaj" },
-    { key: "applied", label: "Moje aplikacje", count: appliedJobs.length },
+    { key: "applied", label: "Moje aplikacje", count: dbApplications.length },
     { key: "saved", label: "Zapisane", count: savedJobs.length },
   ];
 
@@ -345,6 +375,7 @@ const Index = () => {
         onClose={() => setSelectedJob(null)}
         onApply={(job) => {
           setAppliedJobs((prev) => (prev.some((j) => j.id === job.id) ? prev : [job, ...prev]));
+          applyToJob(job);
         }}
       />
     </div>
