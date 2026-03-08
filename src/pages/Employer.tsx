@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Briefcase, Plus, Users, Trash2, Eye, ChevronDown, ChevronUp,
-  BarChart3, Zap, Layers, UserCheck, ArrowLeftRight,
+  BarChart3, Zap, Layers, UserCheck, ArrowLeftRight, EyeOff,
 } from "lucide-react";
 import { type Job, type Candidate, type MatchResult, type EnrichedEmployerApplication, getActivityLabel } from "@/domain/models";
 import MatchBadge from "@/components/MatchBadge";
@@ -22,6 +22,8 @@ import EmptyState from "@/components/employer/EmptyState";
 import ChatPanel from "@/components/employer/ChatPanel";
 import type { ApplicationStatus } from "@/types/application";
 import { useAuth } from "@/hooks/useAuth";
+import { hideJob, unhideJob } from "@/lib/moderation";
+import { toast } from "sonner";
 
 const Employer = () => {
   const { user } = useAuth();
@@ -269,9 +271,29 @@ const Employer = () => {
                           <p className="text-xs text-muted-foreground truncate">{job.company} · {job.location}</p>
                         </div>
                         {job.employerId === user?.id && (
-                          <button onClick={() => handleDelete(job.id)} className="p-1.5 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors shrink-0">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  if (job.status === "hidden") {
+                                    await unhideJob(job.id);
+                                    toast.success("Oferta opublikowana ponownie");
+                                  } else {
+                                    await hideJob(job.id);
+                                    toast.success("Oferta ukryta");
+                                  }
+                                  refetch();
+                                } catch { toast.error("Nie udało się zmienić statusu"); }
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                              title={job.status === "hidden" ? "Opublikuj" : "Ukryj"}
+                            >
+                              {job.status === "hidden" ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                            </button>
+                            <button onClick={() => handleDelete(job.id)} className="p-1.5 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         )}
                       </div>
                       <div className="flex items-center gap-1.5 flex-wrap">
