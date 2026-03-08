@@ -131,6 +131,7 @@ const ChatPanel = ({ messages, onSend, candidateName, isUnlocked, onUnlock, curr
           onClick={() => handleSend()}
           disabled={!text.trim() || sending}
           className="p-2 rounded-xl btn-gradient text-primary-foreground disabled:opacity-40 flex items-center justify-center"
+          data-testid="chat-send"
         >
           {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
         </button>
