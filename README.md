@@ -102,6 +102,7 @@ See [`.env.example`](.env.example) for the full template. Key groups:
 - [`docs/provider-integration-plan.md`](docs/provider-integration-plan.md) — Provider abstraction roadmap
 - [`docs/cleanup-notes.md`](docs/cleanup-notes.md) — Technical debt and security notes
 - [`docs/production-readiness-report.md`](docs/production-readiness-report.md) — Deployment readiness audit
+- [`docs/security-prelaunch.md`](docs/security-prelaunch.md) — Security risks, safe-to-expose values, and remediation steps
 
 ## License
 
