@@ -176,12 +176,6 @@ const MyProfile = () => {
 
   const removeSkill = (skill: string) => setSkills(skills.filter((s) => s !== skill));
 
-  const moveSkill = (from: number, to: number) => {
-    const arr = [...skills];
-    const [item] = arr.splice(from, 1);
-    arr.splice(to, 0, item);
-    setSkills(arr);
-  };
 
   const addExperience = () => {
     if (experienceEntries.length >= 3) return;
@@ -227,8 +221,6 @@ const MyProfile = () => {
     salary_min: salaryMin, links, title, location,
   });
 
-  const coreSkills = skills.slice(0, 5);
-  const additionalSkills = skills.slice(5);
 
   const sections = [
     { id: "basic", label: "Dane podstawowe", icon: "👤" },
