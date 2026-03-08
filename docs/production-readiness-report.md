@@ -1,6 +1,6 @@
 # Production Readiness Report
 
-**Date:** 2026-03-08 (post saved_jobs + swipe_events migration)
+**Date:** 2026-03-08 (all 9 repositories on Supabase)
 **Target Stack:** Lovable → GitHub → Cloudflare Pages + Supabase + Edge Functions + Resend + PostHog/GA4 + Sentry
 
 ---
@@ -19,13 +19,12 @@
 | `storage` | `supabaseStorage.ts` | `upload`, `getPublicUrl`, `delete` |
 | `savedJobs` | `supabase/savedJobs.ts` | `listIds`, `save`, `remove`, `isSaved` |
 | `swipeEvents` | `supabase/swipeEvents.ts` | `record`, `listSwipedJobIds`, `clear` |
+| `notifications` | `supabase/notifications.ts` | `listForUser`, `markRead`, `markAllRead`, `countUnread`, `subscribe` |
+| `preferences` | `supabase/preferences.ts` | `get`, `set`, `delete` |
 
-### 🟡 Mock (DB tables not yet created)
+### 🟡 Mock (none remaining)
 
-| Provider | Mock File | Needs Table |
-|----------|-----------|-------------|
-| `notifications` | `mock/notifications.ts` | `notifications` |
-| `preferences` | `mock/preferences.ts` | `user_preferences` |
+All data repositories are now backed by Supabase.
 
 ### 🟡 Noop (pending external integration)
 
@@ -40,17 +39,33 @@
 
 ## Repository Contract Coverage
 
-All 9 repository interfaces now fully cover every product flow:
+All 9 repository interfaces are fully implemented on Supabase:
 
 - **JobRepository**: list, listForEmployer, getById, create, update, archive, delete
 - **ApplicationRepository**: apply (RPC), listForCandidate, listForEmployer, updateStatus (with source), countByStatus, subscribeForCandidate, subscribeForEmployer
 - **MessageRepository**: listByApplication, send, subscribe (realtime)
 - **CandidateRepository**: list (with filters), getByUserId, upsert
 - **ProfileRepository**: getByUserId, update
-- **SavedJobRepository**: listIds, save, remove, isSaved ✅ **(Supabase)**
-- **SwipeEventRepository**: record, listSwipedJobIds, clear ✅ **(Supabase)**
-- **NotificationRepository**: listForUser, markRead, markAllRead, countUnread, subscribe
-- **PreferencesRepository**: get, set, delete
+- **SavedJobRepository**: listIds, save, remove, isSaved ✅
+- **SwipeEventRepository**: record, listSwipedJobIds, clear ✅
+- **NotificationRepository**: listForUser, markRead, markAllRead, countUnread, subscribe ✅
+- **PreferencesRepository**: get, set, delete ✅
+
+---
+
+## Database Tables (9 total)
+
+| Table | RLS | Realtime |
+|-------|-----|----------|
+| `jobs` | ✅ 4 policies | — |
+| `applications` | ✅ 5 policies | — |
+| `candidates` | ✅ 2 policies | — |
+| `profiles` | ✅ 3 policies | — |
+| `messages` | ✅ 2 policies | TODO |
+| `saved_jobs` | ✅ 3 policies | — |
+| `swipe_events` | ✅ 3 policies | — |
+| `notifications` | ✅ 3 policies | ✅ |
+| `user_preferences` | ✅ 4 policies | — |
 
 ---
 
@@ -68,17 +83,18 @@ All 9 repository interfaces now fully cover every product flow:
 
 ## Security
 
-- RLS on all 7 existing tables (jobs, applications, candidates, profiles, messages, saved_jobs, swipe_events)
+- RLS on all 9 tables
 - Role-aware route guards in App.tsx
 - Navigation guards in Index.tsx
 - Storage bucket `cvs` needs RLS policies (documented in security-prelaunch.md)
+- Notifications INSERT is server-only (no client INSERT policy)
 
 ---
 
 ## Missing Infrastructure
 
-- [ ] DB tables: `notifications`, `user_preferences`
 - [ ] Storage RLS for `cvs` bucket
 - [ ] Cloudflare Pages config
 - [ ] pgvector extension
 - [ ] Realtime publication for `messages` table
+- [ ] Notification creation triggers (server-side)
