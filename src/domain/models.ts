@@ -171,7 +171,10 @@ export interface Notification {
 
 // ─── Match scoring (re-exported from domain/scoring) ─────────────────────────
 
-export type { MatchResult, ScoreBreakdown, DimensionScore } from "@/domain/scoring/types";
+import type { MatchResult as _MatchResult, ScoreBreakdown as _ScoreBreakdown, DimensionScore as _DimensionScore } from "@/domain/scoring/types";
+export type MatchResult = _MatchResult;
+export type ScoreBreakdown = _ScoreBreakdown;
+export type DimensionScore = _DimensionScore;
 
 // ─── Enriched types for UI ───────────────────────────────────────────────────
 
