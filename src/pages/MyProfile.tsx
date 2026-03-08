@@ -258,19 +258,27 @@ const MyProfile = () => {
 
       <main className="flex-1 flex flex-col px-4 py-6 max-w-lg mx-auto w-full">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <h2 className="font-display text-2xl font-bold text-foreground mb-1">Mój profil</h2>
-          <p className="text-muted-foreground text-sm mb-4">Bądź zwięzły — rekruterzy skanują profil w mniej niż 30 sekund.</p>
+          <h2 className="font-display text-2xl font-bold text-foreground mb-1">
+            {isEmployer ? "Profil pracodawcy" : "Mój profil"}
+          </h2>
+          <p className="text-muted-foreground text-sm mb-4">
+            {isEmployer
+              ? "Uzupełnij dane firmy, aby kandydaci mogli Cię lepiej poznać."
+              : "Bądź zwięzły — rekruterzy skanują profil w mniej niż 30 sekund."}
+          </p>
 
-          {/* Completeness */}
-          <div className="mb-6 p-3 rounded-xl bg-secondary/50 border border-border">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-muted-foreground">Kompletność profilu</span>
-              <span className={`text-sm font-bold ${completeness >= 80 ? "text-accent" : completeness >= 50 ? "text-yellow-400" : "text-muted-foreground"}`}>
-                {completeness}%
-              </span>
+          {/* Completeness - only for candidates */}
+          {!isEmployer && (
+            <div className="mb-6 p-3 rounded-xl bg-secondary/50 border border-border">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">Kompletność profilu</span>
+                <span className={`text-sm font-bold ${completeness >= 80 ? "text-accent" : completeness >= 50 ? "text-yellow-400" : "text-muted-foreground"}`}>
+                  {completeness}%
+                </span>
+              </div>
+              <Progress value={completeness} className="h-2" />
             </div>
-            <Progress value={completeness} className="h-2" />
-          </div>
+          )}
 
           {/* Accordion sections */}
           <div className="space-y-2">
