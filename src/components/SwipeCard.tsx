@@ -91,7 +91,7 @@ const SwipeCard = ({ job, onSwipe, isTop, matchResult, isSaved, onTap, forcedExi
         },
       }}
     >
-      <div className="card-gradient rounded-2xl shadow-card overflow-y-auto border border-border cursor-grab active:cursor-grabbing h-full">
+      <div className="card-gradient rounded-2xl shadow-card overflow-y-auto border border-border cursor-grab active:cursor-grabbing">
         {/* Swipe indicators */}
         {isTop && (
           <>
