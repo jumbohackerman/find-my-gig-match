@@ -9,6 +9,7 @@ import { getProvider } from "@/providers/registry";
 import { useAuth } from "@/hooks/useAuth";
 import { Progress } from "@/components/ui/progress";
 import { ProfileSkeleton } from "@/components/StateViews";
+import LocalErrorBoundary from "@/components/LocalErrorBoundary";
 import { toast } from "sonner";
 
 interface ExperienceEntry {
