@@ -86,7 +86,7 @@ const Index = () => {
   }
 
   return (
-    <div className="h-[100dvh] bg-background flex flex-col overflow-x-clip overflow-y-clip">
+    <div className="h-[100dvh] bg-background flex flex-col overflow-y-clip">
 
 
       <Navbar />
