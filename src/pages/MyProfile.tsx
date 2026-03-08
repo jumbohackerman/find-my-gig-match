@@ -65,6 +65,7 @@ const MyProfile = () => {
   const { user, profile, loading: authLoading } = useAuth();
   const isEmployer = profile?.role === "employer";
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const [fullName, setFullName] = useState("");
   const [title, setTitle] = useState("");
