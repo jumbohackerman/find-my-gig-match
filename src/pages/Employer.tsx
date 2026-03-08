@@ -90,8 +90,32 @@ const Employer = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground text-sm">Ładowanie danych...</div>
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="w-8 h-8 rounded-lg btn-gradient flex items-center justify-center">
+              <Briefcase className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <h1 className="font-display text-xl font-bold text-foreground">JobSwipe</h1>
+          </div>
+        </header>
+        <main className="flex-1 flex flex-col px-4 py-6 max-w-2xl mx-auto w-full space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="card-gradient rounded-xl border border-border p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-secondary animate-pulse shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-3/4 rounded bg-secondary animate-pulse" />
+                  <div className="h-3 w-1/2 rounded bg-secondary animate-pulse" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="h-7 w-24 rounded-lg bg-secondary animate-pulse" />
+                <div className="h-7 w-16 rounded-lg bg-secondary animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </main>
       </div>
     );
   }

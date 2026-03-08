@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Check, Star, RotateCcw } from "lucide-react";
+import { SwipeCardSkeleton, EmptyView } from "@/components/StateViews";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SwipeCard from "@/components/SwipeCard";
@@ -69,8 +70,16 @@ const Index = () => {
 
   if (jobsLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground text-sm">Ładowanie ofert...</div>
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <div className="px-6 pt-4 flex gap-1">
+          {["Przeglądaj", "Moje aplikacje", "Zapisane"].map((l) => (
+            <div key={l} className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium opacity-50">{l}</div>
+          ))}
+        </div>
+        <main className="flex-1 flex flex-col items-center px-4 py-4 max-w-md mx-auto w-full">
+          <SwipeCardSkeleton />
+        </main>
       </div>
     );
   }
