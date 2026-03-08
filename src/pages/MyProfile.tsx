@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Briefcase, Save, Plus, X, GripVertical, Upload, FileText,
+  Briefcase, Save, Plus, X, Upload, FileText,
   Globe, Github, Linkedin, ExternalLink, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
