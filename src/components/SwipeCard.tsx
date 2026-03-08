@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { MapPin, Clock, Briefcase, Wifi } from "lucide-react";
-import { pl } from "date-fns/locale";
 import MatchBadge from "@/components/MatchBadge";
 import type { Job } from "@/domain/models";
 import type { MatchResult } from "@/lib/matchScoring";
@@ -52,7 +51,6 @@ const SwipeCard = ({ job, onSwipe, isTop, matchResult, isSaved, onTap }: SwipeCa
   };
 
   const handleTap = () => {
-    // Only open details if no drag occurred
     if (!didDrag.current && onTap) onTap();
   };
 
@@ -61,8 +59,14 @@ const SwipeCard = ({ job, onSwipe, isTop, matchResult, isSaved, onTap }: SwipeCa
 
   return (
     <motion.div
-      className="absolute inset-x-0 top-0 cursor-grab active:cursor-grabbing"
-      style={{ x, rotate, zIndex: isTop ? 10 : 0 }}
+      className="absolute inset-x-0 top-0"
+      style={{
+        x,
+        rotate,
+        zIndex: isTop ? 2 : 1,
+        // Prevent this element from capturing clicks outside the visible card
+        pointerEvents: isTop ? "auto" : "none",
+      }}
       drag={isTop ? "x" : false}
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.9}
@@ -78,7 +82,7 @@ const SwipeCard = ({ job, onSwipe, isTop, matchResult, isSaved, onTap }: SwipeCa
         transition: { duration: 0.3 },
       }}
     >
-      <div className="card-gradient rounded-2xl shadow-card overflow-hidden border border-border">
+      <div className="card-gradient rounded-2xl shadow-card overflow-hidden border border-border cursor-grab active:cursor-grabbing">
         {/* Swipe indicators */}
         {isTop && (
           <>
