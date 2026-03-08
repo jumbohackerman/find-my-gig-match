@@ -75,6 +75,7 @@ const Navbar = () => {
             to="/my-profile"
             className="p-2 sm:px-4 sm:py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Mój profil"
+            data-testid="nav-profile"
           >
             <User className="w-4 h-4" aria-hidden="true" />
             <span className="hidden sm:inline">Mój profil</span>
@@ -176,6 +177,7 @@ const Navbar = () => {
             onClick={signOut}
             className="p-2 rounded-xl bg-secondary text-secondary-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Wyloguj się"
+            data-testid="nav-logout"
           >
             <LogOut className="w-4 h-4" aria-hidden="true" />
           </button>
