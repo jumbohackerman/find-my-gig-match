@@ -7,6 +7,7 @@ import type { ApplicationWithJob } from "@/hooks/useApplications";
 interface Props {
   applications: ApplicationWithJob[];
   loading: boolean;
+  onJobClick?: (job: ApplicationWithJob["job"]) => void;
 }
 
 const ApplicationStatusList = ({ applications, loading }: Props) => {
