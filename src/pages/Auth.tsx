@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Briefcase, Mail, Lock, User, ArrowRight, ArrowLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -211,6 +211,15 @@ const Auth = () => {
                 : "Wyślij link resetowania"}
               <ArrowRight className="w-4 h-4" />
             </button>
+
+            {mode === "signup" && (
+              <p className="text-[11px] text-muted-foreground text-center mt-2 leading-relaxed">
+                Rejestrując się, akceptujesz{" "}
+                <Link to="/terms" className="text-primary hover:underline">Regulamin</Link>
+                {" "}oraz{" "}
+                <Link to="/privacy" className="text-primary hover:underline">Politykę Prywatności</Link>.
+              </p>
+            )}
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-4">
