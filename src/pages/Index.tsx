@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Check, Star, Briefcase, RotateCcw, Users, Building2, LogOut, User, Bell } from "lucide-react";
+import { X, Check, Star, RotateCcw } from "lucide-react";
+import Navbar from "@/components/Navbar";
 import SwipeCard from "@/components/SwipeCard";
 import SavedList from "@/components/SavedList";
 import ApplicationStatusList from "@/components/ApplicationStatusList";
@@ -10,20 +10,15 @@ import OnboardingModal from "@/components/OnboardingModal";
 import JobDetailModal from "@/components/JobDetailModal";
 import type { Job } from "@/domain/models";
 import { useAuth } from "@/hooks/useAuth";
-import { useRequireRole } from "@/hooks/useRequireRole";
 import { useCandidateApplications } from "@/hooks/useApplications";
-import { useNotifications } from "@/hooks/useNotifications";
 import { useJobFeed } from "@/hooks/useJobFeed";
 import { useOnboarding } from "@/hooks/useOnboarding";
 
 type Tab = "swipe" | "applied" | "saved";
 
 const Index = () => {
-  const { signOut, user, profile } = useAuth();
-  const isEmployer = profile?.role === "employer";
-  const isCandidate = profile?.role === "candidate";
+  const { user } = useAuth();
   const { applications: dbApplications, loading: appsLoading, refetch: refetchApps } = useCandidateApplications();
-  const { notifications, unreadCount, markAllRead } = useNotifications();
   const { showOnboarding, completeOnboarding, dismissOnboarding } = useOnboarding();
 
   const {
