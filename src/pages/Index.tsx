@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import SwipeCard from "@/components/SwipeCard";
 import SavedList from "@/components/SavedList";
 import ApplicationStatusList from "@/components/ApplicationStatusList";
+import RecentlyViewedList from "@/components/RecentlyViewedList";
 import JobFilters from "@/components/JobFilters";
 import OnboardingModal from "@/components/OnboardingModal";
 import JobDetailModal from "@/components/JobDetailModal";
@@ -16,15 +17,17 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCandidateApplications } from "@/hooks/useApplications";
 import { useJobFeed } from "@/hooks/useJobFeed";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 
-type Tab = "swipe" | "applied" | "saved";
-const VALID_TABS: Tab[] = ["swipe", "applied", "saved"];
+type Tab = "swipe" | "applied" | "saved" | "recent";
+const VALID_TABS: Tab[] = ["swipe", "applied", "saved", "recent"];
 
 const Index = () => {
   useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const { applications: dbApplications, loading: appsLoading, refetch: refetchApps } = useCandidateApplications();
   const { showOnboarding, completeOnboarding, dismissOnboarding } = useOnboarding();
+  const { recentEntries, trackView, clear: clearRecent, count: recentCount } = useRecentlyViewed();
 
   const {
     allJobs,
@@ -67,13 +70,14 @@ const Index = () => {
 
   const openJobModal = useCallback((job: Job | null) => {
     setSelectedJob(job);
+    if (job) trackView(job);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       if (job) next.set("job", job.id);
       else next.delete("job");
       return next;
     }, { replace: true });
-  }, [setSearchParams]);
+  }, [setSearchParams, trackView]);
 
   const closeJobModal = useCallback(() => openJobModal(null), [openJobModal]);
 
@@ -116,6 +120,7 @@ const Index = () => {
     { key: "swipe", label: "Przeglądaj" },
     { key: "applied", label: "Moje aplikacje", count: dbApplications.length },
     { key: "saved", label: "Zapisane", count: savedJobs.length },
+    { key: "recent", label: "Ostatnie", count: recentCount > 0 ? recentCount : undefined },
   ];
 
   if (jobsLoading) {
@@ -189,6 +194,13 @@ const Index = () => {
               Zapisane oferty ({savedJobs.length})
             </h2>
             <SavedList jobs={savedJobs} onApply={handleSavedApply} onJobClick={openJobModal} />
+          </motion.div>
+        ) : activeTab === "recent" ? (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full">
+            <h2 className="font-display text-lg font-bold text-foreground mb-4">
+              Ostatnio przeglądane ({recentCount})
+            </h2>
+            <RecentlyViewedList entries={recentEntries} onJobClick={openJobModal} onClear={clearRecent} />
           </motion.div>
         ) : isFinished ? (
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
