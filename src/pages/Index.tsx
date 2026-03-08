@@ -114,7 +114,7 @@ const Index = () => {
         ))}
       </div>
 
-      <main className="flex-1 flex flex-col items-center px-4 py-4 max-w-md mx-auto w-full min-h-0 overflow-y-auto">
+      <main className={`flex-1 flex flex-col items-center px-4 py-4 max-w-md mx-auto w-full min-h-0 ${activeTab === "swipe" ? "overflow-hidden" : "overflow-y-auto"}`}>
         {activeTab === "applied" ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full">
             <h2 className="font-display text-lg font-bold text-foreground mb-4">
@@ -166,7 +166,7 @@ const Index = () => {
             ) : (
               <div className="flex-1 flex flex-col items-center min-h-0 w-full">
                 {/* Card stack — fills available space, overflow-hidden prevents card bleeding into buttons */}
-                <div className="relative w-full flex-1 min-h-0">
+                <div className="relative w-full flex-1 min-h-0 overflow-hidden">
                   <AnimatePresence>
                     {remainingJobs.slice(0, 2).map((job, i) => (
                       <SwipeCard
