@@ -70,25 +70,14 @@ const Navbar = () => {
 
         {/* ── Candidate CTAs ── */}
         {isCandidate && (
-          <>
-            <Link
-              to="/my-profile"
-              className="p-2 sm:px-4 sm:py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Mój profil"
-            >
-              <User className="w-4 h-4" aria-hidden="true" />
-              <span className="hidden sm:inline">Mój profil</span>
-            </Link>
-            <Link
-              to="/auth"
-              state={{ defaultRole: "employer" }}
-              className="p-2 sm:px-4 sm:py-2 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-[1.02] transition-transform flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Dla firm"
-            >
-              <Building2 className="w-4 h-4" aria-hidden="true" />
-              <span className="hidden sm:inline">Dla firm</span>
-            </Link>
-          </>
+          <Link
+            to="/my-profile"
+            className="p-2 sm:px-4 sm:py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Mój profil"
+          >
+            <User className="w-4 h-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Mój profil</span>
+          </Link>
         )}
 
         {/* ── Employer CTAs ── */}

@@ -1,17 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Briefcase, Mail, Lock, User, ArrowRight, ArrowLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 type Mode = "login" | "signup" | "forgot";
 type Role = "candidate" | "employer";
 
 const Auth = () => {
+  const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Redirect already-authenticated users to their home
+  useEffect(() => {
+    if (authLoading) return;
+    if (user && profile) {
+      navigate(profile.role === "employer" ? "/employer" : "/", { replace: true });
+    }
+  }, [user, profile, authLoading, navigate]);
   const defaultRole = (location.state as any)?.defaultRole;
   const [mode, setMode] = useState<Mode>("login");
   const [role, setRole] = useState<Role>(defaultRole === "employer" ? "employer" : "candidate");
@@ -19,6 +29,11 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Determine where to send user after auth based on role
+  const getPostAuthRedirect = (userRole?: string) => {
+    return userRole === "employer" ? "/employer" : "/";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,14 +59,20 @@ const Auth = () => {
         if (error) throw error;
 
         if (data.session) {
-          navigate("/");
+          navigate(getPostAuthRedirect(role));
         } else {
           toast.success("Sprawdź email, aby potwierdzić konto!");
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate("/");
+        // Fetch profile role to redirect correctly
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .maybeSingle();
+        navigate(getPostAuthRedirect(profileData?.role));
       }
     } catch (err: any) {
       toast.error(err.message || "Coś poszło nie tak");
