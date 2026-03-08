@@ -8,6 +8,7 @@ import SavedList from "@/components/SavedList";
 import JobFilters, { filterJobs, defaultFilters, type JobFiltersState } from "@/components/JobFilters";
 import OnboardingModal from "@/components/OnboardingModal";
 import DemoBanner from "@/components/DemoBanner";
+import JobDetailModal from "@/components/JobDetailModal";
 import { jobs, type Job } from "@/data/jobs";
 import { useAuth } from "@/hooks/useAuth";
 import { calculateMatch, DEMO_CANDIDATE, type CandidateProfile, type MatchResult } from "@/lib/matchScoring";
@@ -33,6 +34,7 @@ const Index = () => {
   const [candidateProfile, setCandidateProfile] = useState<CandidateProfile>(DEMO_CANDIDATE);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
   useEffect(() => {
     if (user && profile?.role === "candidate") {
@@ -260,14 +262,14 @@ const Index = () => {
             <h2 className="font-display text-lg font-bold text-foreground mb-4">
               Moje aplikacje ({appliedJobs.length})
             </h2>
-            <AppliedList jobs={appliedJobs} />
+            <AppliedList jobs={appliedJobs} onJobClick={setSelectedJob} />
           </motion.div>
         ) : activeTab === "saved" ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full">
             <h2 className="font-display text-lg font-bold text-foreground mb-4">
               Zapisane oferty ({savedJobs.length})
             </h2>
-            <SavedList jobs={savedJobs} onApply={handleSavedApply} />
+            <SavedList jobs={savedJobs} onApply={handleSavedApply} onJobClick={setSelectedJob} />
           </motion.div>
         ) : isFinished ? (
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
@@ -308,6 +310,7 @@ const Index = () => {
                         isTop={i === 0}
                         matchResult={matchResults[job.id]}
                         isSaved={savedJobs.some((j) => j.id === job.id)}
+                        onTap={() => setSelectedJob(job)}
                       />
                     ))}
                   </AnimatePresence>
@@ -351,6 +354,15 @@ const Index = () => {
         open={showOnboarding}
         onComplete={handleOnboardingComplete}
         onClose={() => setShowOnboarding(false)}
+      />
+
+      <JobDetailModal
+        job={selectedJob}
+        matchResult={selectedJob ? matchResults[selectedJob.id] : undefined}
+        onClose={() => setSelectedJob(null)}
+        onApply={(job) => {
+          setAppliedJobs((prev) => (prev.some((j) => j.id === job.id) ? prev : [job, ...prev]));
+        }}
       />
     </div>
   );
