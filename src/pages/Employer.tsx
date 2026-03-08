@@ -145,6 +145,7 @@ const Employer = () => {
               onClick={() => setShowForm(!showForm)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-105 transition-transform shrink-0 self-start sm:self-auto"
               data-testid="employer-add-job"
+            >
               <Plus className="w-4 h-4" /> Dodaj ogłoszenie
             </button>
           </div>
