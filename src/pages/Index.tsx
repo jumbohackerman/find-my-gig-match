@@ -3,18 +3,15 @@ import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Check, Star, Briefcase, RotateCcw, Users, Building2, LogOut, User, Bell } from "lucide-react";
 import SwipeCard from "@/components/SwipeCard";
-import AppliedList from "@/components/AppliedList";
 import SavedList from "@/components/SavedList";
 import ApplicationStatusList from "@/components/ApplicationStatusList";
 import JobFilters, { filterJobs, defaultFilters, type JobFiltersState } from "@/components/JobFilters";
 import OnboardingModal from "@/components/OnboardingModal";
-import DemoBanner from "@/components/DemoBanner";
 import JobDetailModal from "@/components/JobDetailModal";
 import { jobs, type Job } from "@/data/jobs";
 import { useAuth } from "@/hooks/useAuth";
 import { useCandidateApplications } from "@/hooks/useApplications";
 import { calculateMatch, DEMO_CANDIDATE, type CandidateProfile, type MatchResult } from "@/lib/matchScoring";
-import type { ApplicationStatus } from "@/types/application";
 
 type Tab = "swipe" | "applied" | "saved";
 
@@ -39,7 +36,6 @@ const Index = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [demoStatuses, setDemoStatuses] = useState<Record<string, ApplicationStatus>>({});
 
   useEffect(() => {
     if (user && profile?.role === "candidate") {
@@ -47,26 +43,6 @@ const Index = () => {
       if (!onboarded) setShowOnboarding(true);
     }
   }, [user, profile]);
-
-  // Demo: simulate shortlist notifications and status changes after some applications
-  useEffect(() => {
-    if (appliedJobs.length >= 2 && notifications.length === 0) {
-      const timer = setTimeout(() => {
-        const firstJob = appliedJobs[0];
-        setNotifications([
-          {
-            id: "n1",
-            message: "Zostałeś dodany do shortlisty na tę rolę.",
-            jobTitle: firstJob.title,
-            read: false,
-          },
-        ]);
-        // Simulate status change to shortlisted
-        setDemoStatuses((prev) => ({ ...prev, [firstJob.id]: "shortlisted" }));
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [appliedJobs.length]);
 
   const handleOnboardingComplete = (data: {
     title: string;
@@ -110,7 +86,6 @@ const Index = () => {
 
       if (direction === "right") {
         setAppliedJobs((prev) => (prev.some((j) => j.id === job.id) ? prev : [job, ...prev]));
-        setDemoStatuses((prev) => ({ ...prev, [job.id]: "applied" }));
       } else if (direction === "save") {
         setSavedJobs((prev) => (prev.some((j) => j.id === job.id) ? prev : [job, ...prev]));
       } else {
@@ -152,7 +127,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <DemoBanner />
 
       {/* Header */}
       <header className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border flex items-center justify-between gap-2">
@@ -269,13 +243,9 @@ const Index = () => {
         {activeTab === "applied" ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full">
             <h2 className="font-display text-lg font-bold text-foreground mb-4">
-              Moje aplikacje ({user ? dbApplications.length : appliedJobs.length})
+              Moje aplikacje ({dbApplications.length})
             </h2>
-            {user ? (
-              <ApplicationStatusList applications={dbApplications} loading={appsLoading} />
-            ) : (
-              <AppliedList jobs={appliedJobs} onJobClick={setSelectedJob} statuses={demoStatuses} />
-            )}
+            <ApplicationStatusList applications={dbApplications} loading={appsLoading} />
           </motion.div>
         ) : activeTab === "saved" ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full">
