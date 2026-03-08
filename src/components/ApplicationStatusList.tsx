@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import StatusPipeline from "@/components/employer/StatusPipeline";
 import { STATUS_LABELS, STATUS_COLORS, type ApplicationStatus } from "@/types/application";
 import type { ApplicationWithJob } from "@/hooks/useApplications";
-import type { ApplicationWithJob } from "@/hooks/useApplications";
 
 interface Props {
   applications: ApplicationWithJob[];
