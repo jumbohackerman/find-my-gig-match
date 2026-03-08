@@ -44,7 +44,8 @@ const ApplicationStatusList = ({ applications, loading, onJobClick }: Props) => 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="card-gradient rounded-xl border border-border overflow-hidden"
+              className="card-gradient rounded-xl border border-border overflow-hidden cursor-pointer hover:border-primary/40 transition-colors"
+              onClick={() => onJobClick?.(job)}
             >
               <div className="p-4 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-xl shrink-0">

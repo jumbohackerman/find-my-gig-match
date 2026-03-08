@@ -275,7 +275,15 @@ const Index = () => {
             <h2 className="font-display text-lg font-bold text-foreground mb-4">
               Moje aplikacje ({dbApplications.length})
             </h2>
-            <ApplicationStatusList applications={dbApplications} loading={appsLoading} />
+            <ApplicationStatusList
+              applications={dbApplications}
+              loading={appsLoading}
+              onJobClick={(job) => {
+                if (job) {
+                  setSelectedJob(job as any);
+                }
+              }}
+            />
           </motion.div>
         ) : activeTab === "saved" ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full">
