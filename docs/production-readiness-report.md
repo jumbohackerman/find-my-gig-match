@@ -96,5 +96,6 @@ All 9 repository interfaces are fully implemented on Supabase:
 - [ ] Storage RLS for `cvs` bucket
 - [ ] Cloudflare Pages config
 - [ ] pgvector extension
-- [ ] Realtime publication for `messages` table
-- [ ] Notification creation triggers (server-side)
+- [ ] Candidate-side messaging UI
+- [ ] Message read receipts (`read_at` column + UPDATE policy)
+- [ ] Notification creation triggers (server-side on status change)
