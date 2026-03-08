@@ -84,6 +84,14 @@ const Index = () => {
     actionPending,
   } = useJobFeed();
 
+  const hasActiveFilters =
+    filters.location !== defaultFilters.location ||
+    filters.type !== defaultFilters.type ||
+    filters.salaryMin > 0 ||
+    filters.remote !== defaultFilters.remote ||
+    filters.seniority !== defaultFilters.seniority ||
+    filters.requiredSkills.length > 0;
+
   // ── Restore filters from URL on mount ─────────────────────────────────────
   const initializedFilters = useRef(false);
   useEffect(() => {
