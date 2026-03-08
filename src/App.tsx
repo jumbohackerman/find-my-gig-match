@@ -5,12 +5,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import RoleGate from "@/components/RoleGate";
+import CookieBanner from "@/components/CookieBanner";
 import Index from "./pages/Index";
 import Profiles from "./pages/Profiles";
 import Employer from "./pages/Employer";
 import MyProfile from "./pages/MyProfile";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +35,8 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<Terms />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route
               path="/my-profile"
@@ -65,6 +70,7 @@ const App = () => (
             />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <CookieBanner />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
