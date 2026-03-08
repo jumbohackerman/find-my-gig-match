@@ -8,6 +8,7 @@ import type { Job } from "@/domain/models";
 import type { MatchResult } from "@/lib/matchScoring";
 import MatchBadge from "@/components/MatchBadge";
 import ReportButton from "@/components/ReportButton";
+import LocalErrorBoundary from "@/components/LocalErrorBoundary";
 
 function formatPostedDate(raw: string): string {
   if (!raw) return "";
