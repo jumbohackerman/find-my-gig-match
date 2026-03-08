@@ -41,11 +41,18 @@ const Index = () => {
 
   const [activeTab, setActiveTab] = useState<Tab>("swipe");
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [buttonExitDir, setButtonExitDir] = useState<"left" | "right" | null>(null);
 
   // Refetch applications after apply (swipe triggers applyToJob inside useJobFeed)
   const handleSwipeWithRefetch = async (direction: "left" | "right" | "save") => {
+    // Set exit direction for button-triggered actions before the card unmounts
+    if (direction === "left") setButtonExitDir("left");
+    else if (direction === "right") setButtonExitDir("right");
+    else setButtonExitDir(null); // save keeps default
     await handleSwipe(direction);
     if (direction === "right") refetchApps();
+    // Reset after animation completes
+    setTimeout(() => setButtonExitDir(null), 400);
   };
 
   const handleSavedApply = async (job: Job) => {
@@ -162,6 +169,7 @@ const Index = () => {
                         matchResult={matchResults[job.id]}
                         isSaved={savedJobIds.has(job.id)}
                         onTap={() => setSelectedJob(job)}
+                        forcedExitDirection={i === 0 ? buttonExitDir : null}
                       />
                     ))}
                   </AnimatePresence>
