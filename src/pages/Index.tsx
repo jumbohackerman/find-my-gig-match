@@ -14,7 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCandidateApplications } from "@/hooks/useApplications";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateMatch, DEMO_CANDIDATE, type MatchResult } from "@/lib/matchScoring";
-import type { Candidate as CandidateType } from "@/domain/models";
+
 import { toast } from "sonner";
 
 type Tab = "swipe" | "applied" | "saved";
