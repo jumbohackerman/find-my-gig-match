@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Briefcase, Save, Plus, X, Upload, FileText,
-  Globe, Github, Linkedin, ExternalLink, ChevronDown, ChevronUp,
+  Globe, Github, Linkedin, ExternalLink, ChevronDown, Minus,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +15,8 @@ interface ExperienceEntry {
   company: string;
   startDate: string;
   endDate: string;
+  isCurrent: boolean;
+  description: string;
   bullets: string[];
 }
 
@@ -176,12 +178,11 @@ const MyProfile = () => {
 
   const removeSkill = (skill: string) => setSkills(skills.filter((s) => s !== skill));
 
-
   const addExperience = () => {
     if (experienceEntries.length >= 3) return;
     setExperienceEntries([
       ...experienceEntries,
-      { title: "", company: "", startDate: "", endDate: "", bullets: [""] },
+      { title: "", company: "", startDate: "", endDate: "", isCurrent: false, description: "", bullets: [""] },
     ]);
     setExpandedExp(experienceEntries.length);
   };
@@ -189,6 +190,9 @@ const MyProfile = () => {
   const updateExperience = (idx: number, field: keyof ExperienceEntry, value: any) => {
     const arr = [...experienceEntries];
     (arr[idx] as any)[field] = value;
+    if (field === "isCurrent" && value === true) {
+      arr[idx].endDate = "Obecnie";
+    }
     setExperienceEntries(arr);
   };
 
@@ -220,14 +224,6 @@ const MyProfile = () => {
     summary, skills, experience_entries: experienceEntries,
     salary_min: salaryMin, links, title, location,
   });
-
-
-  const sections = [
-    { id: "basic", label: "Dane podstawowe", icon: "👤" },
-    { id: "prefs", label: "Preferencje pracy", icon: "⚙️" },
-    { id: "competence", label: "Umiejętności i doświadczenie", icon: "🚀" },
-    { id: "links", label: "Linki i CV", icon: "🔗" },
-  ];
 
   const toggleSection = (id: string) => {
     setActiveSection(activeSection === id ? "" : id);
@@ -302,14 +298,23 @@ const MyProfile = () => {
                 <div className="flex gap-4 items-end">
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-muted-foreground">Lata doświadczenia</label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={40}
-                      value={experienceYears}
-                      onChange={(e) => setExperienceYears(parseInt(e.target.value) || 0)}
-                      className="w-24 px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setExperienceYears(Math.max(0, experienceYears - 1))}
+                        className="w-9 h-9 rounded-lg bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                      >
+                        <Minus className="w-3.5 h-3.5" />
+                      </button>
+                      <div className="w-12 h-9 rounded-lg bg-secondary border border-border flex items-center justify-center text-sm font-semibold text-foreground">
+                        {experienceYears}
+                      </div>
+                      <button
+                        onClick={() => setExperienceYears(Math.min(40, experienceYears + 1))}
+                        className="w-9 h-9 rounded-lg bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                   <div className="flex-1 space-y-1.5">
                     <label className="text-xs font-medium text-muted-foreground">Poziom</label>
@@ -390,10 +395,42 @@ const MyProfile = () => {
                     Oczekiwania finansowe: {salaryMin > 0 || salaryMax > 0 ? `${salaryMin} 000 zł – ${salaryMax} 000 zł brutto` : "Nie ustawiono"}
                   </label>
                   <div className="flex gap-3 items-center">
-                    <input type="number" min={0} max={100} value={salaryMin || ""} onChange={(e) => setSalaryMin(parseInt(e.target.value) || 0)} placeholder="Min" className="w-24 px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setSalaryMin(Math.max(0, salaryMin - 1))}
+                        className="w-8 h-8 rounded-lg bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <div className="w-14 h-8 rounded-lg bg-secondary border border-border flex items-center justify-center text-sm font-semibold text-foreground">
+                        {salaryMin || "Min"}
+                      </div>
+                      <button
+                        onClick={() => setSalaryMin(Math.min(100, salaryMin + 1))}
+                        className="w-8 h-8 rounded-lg bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
                     <span className="text-muted-foreground text-sm">–</span>
-                    <input type="number" min={0} max={100} value={salaryMax || ""} onChange={(e) => setSalaryMax(parseInt(e.target.value) || 0)} placeholder="Max" className="w-24 px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                    <span className="text-xs text-muted-foreground">tys. zł brutto</span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setSalaryMax(Math.max(0, salaryMax - 1))}
+                        className="w-8 h-8 rounded-lg bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <div className="w-14 h-8 rounded-lg bg-secondary border border-border flex items-center justify-center text-sm font-semibold text-foreground">
+                        {salaryMax || "Max"}
+                      </div>
+                      <button
+                        onClick={() => setSalaryMax(Math.min(100, salaryMax + 1))}
+                        className="w-8 h-8 rounded-lg bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <span className="text-xs text-muted-foreground">tys. zł</span>
                   </div>
                 </div>
                 <div className="space-y-1.5">
@@ -481,7 +518,7 @@ const MyProfile = () => {
                   )}
                   {skills.length > 0 && (
                     <p className="text-[10px] text-muted-foreground">
-                      Pierwsze 5 umiejętności są wyróżnione jako kluczowe. Przeciągnij, aby zmienić kolejność.
+                      Pierwsze 5 umiejętności są wyróżnione jako kluczowe.
                     </p>
                   )}
                 </div>
@@ -504,7 +541,7 @@ const MyProfile = () => {
                             {entry.title || "Nowe stanowisko"}{entry.company ? ` — ${entry.company}` : ""}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {entry.startDate || "Początek"} – {entry.endDate || "Koniec"}
+                            {entry.startDate || "Początek"} – {entry.isCurrent ? "Obecnie" : entry.endDate || "Koniec"}
                           </p>
                         </div>
                         <button
@@ -513,7 +550,7 @@ const MyProfile = () => {
                         >
                           <X className="w-4 h-4" />
                         </button>
-                        {expandedExp === idx ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expandedExp === idx ? "rotate-180" : ""}`} />
                       </button>
 
                       {expandedExp === idx && (
@@ -524,7 +561,33 @@ const MyProfile = () => {
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <Field label="Data rozpoczęcia" value={entry.startDate} onChange={(v) => updateExperience(idx, "startDate", v)} placeholder="2022" />
-                            <Field label="Data zakończenia" value={entry.endDate} onChange={(v) => updateExperience(idx, "endDate", v)} placeholder="2024 lub Obecnie" />
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-medium text-muted-foreground">Data zakończenia</label>
+                              {entry.isCurrent ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1 px-3 py-2 rounded-xl bg-accent/15 border border-accent/30 text-accent text-sm font-medium text-center">
+                                    Obecnie
+                                  </div>
+                                </div>
+                              ) : (
+                                <input
+                                  value={entry.endDate}
+                                  onChange={(e) => updateExperience(idx, "endDate", e.target.value)}
+                                  placeholder="2024"
+                                  className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                />
+                              )}
+                              <button
+                                onClick={() => updateExperience(idx, "isCurrent", !entry.isCurrent)}
+                                className={`mt-1 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+                                  entry.isCurrent
+                                    ? "bg-accent text-accent-foreground"
+                                    : "bg-secondary text-secondary-foreground hover:bg-muted border border-border"
+                                }`}
+                              >
+                                {entry.isCurrent ? "✓ Obecnie tu pracuję" : "Obecnie tu pracuję"}
+                              </button>
+                            </div>
                           </div>
                           {entry.bullets.map((bullet, bi) => (
                             <div key={bi} className="space-y-1.5">
@@ -543,7 +606,7 @@ const MyProfile = () => {
                               />
                             </div>
                           ))}
-                          {entry.bullets.length < 2 && (
+                          {entry.bullets.length < 3 && (
                             <button
                               onClick={() => updateExperience(idx, "bullets", [...entry.bullets, ""])}
                               className="text-xs text-primary hover:underline flex items-center gap-1"
@@ -551,6 +614,20 @@ const MyProfile = () => {
                               <Plus className="w-3 h-3" /> Dodaj punkt
                             </button>
                           )}
+
+                          {/* Extended description - only visible when expanded */}
+                          <div className="space-y-1.5 pt-2 border-t border-border">
+                            <label className="text-xs font-medium text-muted-foreground">
+                              Opis stanowiska ({(entry.description || "").length}/500)
+                            </label>
+                            <textarea
+                              value={entry.description || ""}
+                              onChange={(e) => updateExperience(idx, "description", e.target.value.slice(0, 500))}
+                              placeholder="Opisz szczegółowo swoje obowiązki, osiągnięcia i wpływ na organizację..."
+                              rows={4}
+                              className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                            />
+                          </div>
                         </div>
                       )}
                     </div>
@@ -681,6 +758,5 @@ function LinkField({
     </div>
   );
 }
-
 
 export default MyProfile;
