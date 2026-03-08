@@ -28,9 +28,9 @@ interface SwipeCardProps {
 
 const SwipeCard = ({ job, onSwipe, isTop, matchResult, isSaved, onTap, forcedExitDirection }: SwipeCardProps) => {
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 200], [-15, 15]);
-  const rightOpacity = useTransform(x, [0, 100], [0, 1]);
-  const leftOpacity = useTransform(x, [-100, 0], [1, 0]);
+  const rotate = useTransform(x, [-300, 300], [-12, 12]);
+  const rightOpacity = useTransform(x, [0, 80], [0, 1]);
+  const leftOpacity = useTransform(x, [-80, 0], [1, 0]);
 
   const [exitDirection, setExitDirection] = useState<"left" | "right">("right");
   const didDrag = useRef(false);
@@ -48,7 +48,7 @@ const SwipeCard = ({ job, onSwipe, isTop, matchResult, isSaved, onTap, forcedExi
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     const absX = Math.abs(info.offset.x);
-    if (absX > 120) {
+    if (absX > 100) {
       const dir = info.offset.x > 0 ? "right" : "left";
       setExitDirection(dir);
       onSwipe(dir);
@@ -73,7 +73,7 @@ const SwipeCard = ({ job, onSwipe, isTop, matchResult, isSaved, onTap, forcedExi
       }}
       drag={isTop ? "x" : false}
       dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.9}
+      dragElastic={0.7}
       onDragStart={handleDragStart}
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}
@@ -81,9 +81,14 @@ const SwipeCard = ({ job, onSwipe, isTop, matchResult, isSaved, onTap, forcedExi
       initial={{ scale: isTop ? 1 : 0.95, y: isTop ? 0 : 8 }}
       animate={{ scale: isTop ? 1 : 0.95, y: isTop ? 0 : 8 }}
       exit={{
-        x: resolvedExit === "right" ? 600 : -600,
+        x: resolvedExit === "right" ? 800 : -800,
+        rotate: resolvedExit === "right" ? 20 : -20,
         opacity: 0,
-        transition: { duration: 0.3, ease: [0.32, 0.72, 0, 1] },
+        transition: {
+          x: { type: "spring", stiffness: 300, damping: 30, mass: 0.8 },
+          rotate: { type: "spring", stiffness: 300, damping: 30, mass: 0.8 },
+          opacity: { duration: 0.25, delay: 0.05 },
+        },
       }}
     >
       <div className="card-gradient rounded-2xl shadow-card overflow-y-auto border border-border cursor-grab active:cursor-grabbing h-full">
