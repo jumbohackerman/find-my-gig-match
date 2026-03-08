@@ -36,7 +36,6 @@ const Index = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [demoStatuses, setDemoStatuses] = useState<Record<string, ApplicationStatus>>({});
 
   useEffect(() => {
     if (user && profile?.role === "candidate") {
@@ -44,26 +43,6 @@ const Index = () => {
       if (!onboarded) setShowOnboarding(true);
     }
   }, [user, profile]);
-
-  // Demo: simulate shortlist notifications and status changes after some applications
-  useEffect(() => {
-    if (appliedJobs.length >= 2 && notifications.length === 0) {
-      const timer = setTimeout(() => {
-        const firstJob = appliedJobs[0];
-        setNotifications([
-          {
-            id: "n1",
-            message: "Zostałeś dodany do shortlisty na tę rolę.",
-            jobTitle: firstJob.title,
-            read: false,
-          },
-        ]);
-        // Simulate status change to shortlisted
-        setDemoStatuses((prev) => ({ ...prev, [firstJob.id]: "shortlisted" }));
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [appliedJobs.length]);
 
   const handleOnboardingComplete = (data: {
     title: string;
