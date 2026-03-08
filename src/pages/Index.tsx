@@ -84,6 +84,24 @@ const Index = () => {
     actionPending,
   } = useJobFeed();
 
+  // ── Restore filters from URL on mount ─────────────────────────────────────
+  const initializedFilters = useRef(false);
+  useEffect(() => {
+    if (initializedFilters.current) return;
+    initializedFilters.current = true;
+    const urlFilters = filtersFromParams(searchParams);
+    if (Object.keys(urlFilters).length > 0) {
+      updateFilters({ ...defaultFilters, ...urlFilters });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Sync filter changes → URL ─────────────────────────────────────────────
+  const handleFiltersChange = useCallback((newFilters: JobFiltersState) => {
+    updateFilters(newFilters);
+    setSearchParams((prev) => filtersToParams(newFilters, prev), { replace: true });
+  }, [updateFilters, setSearchParams]);
+
   // ── Deep-link: tab ────────────────────────────────────────────────────────
   const tabParam = searchParams.get("tab") as Tab | null;
   const [activeTab, setActiveTab] = useState<Tab>(
