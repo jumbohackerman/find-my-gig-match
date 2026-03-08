@@ -217,6 +217,7 @@ const Index = () => {
             role="tab"
             aria-selected={activeTab === tab.key}
             aria-controls={`panel-${tab.key}`}
+            data-testid={`tab-${tab.key}`}
             className={`relative px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
               activeTab === tab.key
                 ? "bg-primary text-primary-foreground"
@@ -364,6 +365,7 @@ const Index = () => {
                     disabled={actionPending}
                     className="w-14 h-14 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-destructive hover:border-destructive transition-colors disabled:opacity-40 disabled:pointer-events-none"
                     title="Pomiń"
+                    data-testid="swipe-skip"
                   >
                     <X className="w-6 h-6" />
                   </button>
@@ -372,6 +374,7 @@ const Index = () => {
                     disabled={actionPending}
                     className="w-12 h-12 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-yellow-400 hover:border-yellow-400 transition-colors disabled:opacity-40 disabled:pointer-events-none"
                     title="Zapisz na później"
+                    data-testid="swipe-save"
                   >
                     <Star className="w-5 h-5" />
                   </button>
@@ -380,6 +383,7 @@ const Index = () => {
                     disabled={actionPending}
                     className="w-16 h-16 rounded-full btn-gradient flex items-center justify-center text-primary-foreground shadow-glow hover:scale-110 transition-transform disabled:opacity-50 disabled:hover:scale-100"
                     title="Aplikuj"
+                    data-testid="swipe-apply"
                   >
                     {actionPending ? <Loader2 className="w-7 h-7 animate-spin" /> : <Check className="w-7 h-7" />}
                   </button>

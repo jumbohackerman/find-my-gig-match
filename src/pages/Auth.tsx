@@ -109,7 +109,7 @@ const Auth = () => {
               : "Podaj email, aby otrzymać link do resetowania."}
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-4" aria-label={mode === "login" ? "Formularz logowania" : mode === "signup" ? "Formularz rejestracji" : "Formularz resetowania hasła"}>
+          <form onSubmit={handleSubmit} className="space-y-4" data-testid="auth-form" aria-label={mode === "login" ? "Formularz logowania" : mode === "signup" ? "Formularz rejestracji" : "Formularz resetowania hasła"}>
             {mode === "signup" && (
               <>
                 {/* Role selector */}
@@ -119,6 +119,7 @@ const Auth = () => {
                       type="button"
                       key={r}
                       onClick={() => setRole(r)}
+                      data-testid={`auth-role-${r}`}
                       className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
                         role === r
                           ? "btn-gradient text-primary-foreground shadow-glow"
@@ -137,6 +138,7 @@ const Auth = () => {
                     <input
                       id="auth-fullname"
                       required
+                      data-testid="auth-fullname"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Twoje imię i nazwisko"
@@ -156,6 +158,7 @@ const Auth = () => {
                   id="auth-email"
                   required
                   type="email"
+                  data-testid="auth-email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
               placeholder="jan@przyklad.pl"
@@ -174,6 +177,7 @@ const Auth = () => {
                       id="auth-password"
                       required
                       type="password"
+                      data-testid="auth-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Min. 6 znaków"
@@ -203,6 +207,7 @@ const Auth = () => {
             <button
               type="submit"
               disabled={loading}
+              data-testid="auth-submit"
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-[1.02] transition-transform disabled:opacity-50"
             >
               {loading
@@ -239,6 +244,7 @@ const Auth = () => {
                 <button
                   onClick={() => setMode(mode === "login" ? "signup" : "login")}
                   className="text-primary font-medium hover:underline"
+                  data-testid="auth-toggle-mode"
                 >
                   {mode === "login" ? "Zarejestruj się" : "Zaloguj się"}
                 </button>
