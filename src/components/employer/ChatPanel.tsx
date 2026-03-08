@@ -62,7 +62,7 @@ const ChatPanel = ({ messages, onSend, candidateName, isUnlocked, onUnlock, curr
                 key={msg.id}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`flex ${msg.senderId === "employer" ? "justify-end" : "justify-start"}`}
+                className={`flex ${(currentUserId && msg.senderId === currentUserId) ? "justify-end" : "justify-start"}`}
               >
                 <div
                   className={`px-3 py-1.5 rounded-xl max-w-[80%] text-xs ${
