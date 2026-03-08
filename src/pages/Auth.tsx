@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Briefcase, Mail, Lock, User, ArrowRight, ArrowLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
