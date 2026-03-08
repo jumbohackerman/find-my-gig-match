@@ -100,32 +100,31 @@ const MyProfile = () => {
       return;
     }
     const load = async () => {
-      const candidate = await getProvider("candidates").getByUserId(user.id);
-
-      if (candidate) {
-        setTitle(candidate.title || "");
-        setLocation(candidate.location || "");
-        setSummary(candidate.summary || "");
-        setSkills(candidate.skills || []);
-        setSeniority(candidate.seniority || "Mid");
-        setWorkMode(candidate.workMode || "Zdalnie");
-        setEmploymentType(candidate.employmentType || "Full-time");
-        setSalaryMin(candidate.salaryMin || 0);
-        setSalaryMax(candidate.salaryMax || 0);
-        setAvailability(candidate.availability || "Otwarty na oferty");
-        setExperienceEntries(candidate.experienceEntries as ExperienceEntry[] || []);
-        setLinks(candidate.links as Links || {});
-        setCvUrl(candidate.cvUrl || null);
-
-        const expMatch = candidate.experience?.match(/(\d+)/);
-        setExperienceYears(expMatch ? parseInt(expMatch[1]) : 0);
+      if (!isEmployer) {
+        const candidate = await getProvider("candidates").getByUserId(user.id);
+        if (candidate) {
+          setTitle(candidate.title || "");
+          setLocation(candidate.location || "");
+          setSummary(candidate.summary || "");
+          setSkills(candidate.skills || []);
+          setSeniority(candidate.seniority || "Mid");
+          setWorkMode(candidate.workMode || "Zdalnie");
+          setEmploymentType(candidate.employmentType || "Full-time");
+          setSalaryMin(candidate.salaryMin || 0);
+          setSalaryMax(candidate.salaryMax || 0);
+          setAvailability(candidate.availability || "Otwarty na oferty");
+          setExperienceEntries(candidate.experienceEntries as ExperienceEntry[] || []);
+          setLinks(candidate.links as Links || {});
+          setCvUrl(candidate.cvUrl || null);
+          const expMatch = candidate.experience?.match(/(\d+)/);
+          setExperienceYears(expMatch ? parseInt(expMatch[1]) : 0);
+        }
       }
-
       setFullName(profile?.full_name || user.user_metadata?.full_name || "");
       setLoading(false);
     };
     load();
-  }, [user, profile, authLoading]);
+  }, [user, profile, authLoading, isEmployer]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -134,22 +133,24 @@ const MyProfile = () => {
     try {
       await getProvider("profiles").update(user.id, { fullName });
 
-      await getProvider("candidates").upsert(user.id, {
-        title,
-        location,
-        summary,
-        skills,
-        seniority: seniority as any,
-        workMode: workMode as any,
-        employmentType: employmentType as any,
-        salaryMin,
-        salaryMax,
-        availability,
-        experienceEntries: experienceEntries as any,
-        links: links as any,
-        experience: `${experienceYears} lat`,
-        cvUrl,
-      });
+      if (!isEmployer) {
+        await getProvider("candidates").upsert(user.id, {
+          title,
+          location,
+          summary,
+          skills,
+          seniority: seniority as any,
+          workMode: workMode as any,
+          employmentType: employmentType as any,
+          salaryMin,
+          salaryMax,
+          availability,
+          experienceEntries: experienceEntries as any,
+          links: links as any,
+          experience: `${experienceYears} lat`,
+          cvUrl,
+        });
+      }
 
       toast.success("Profil zapisany");
     } catch (error) {
