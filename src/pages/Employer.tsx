@@ -13,6 +13,7 @@ import CandidateProfileModal from "@/components/CandidateProfileModal";
 import type { ExtendedSeeker } from "@/components/CandidateProfileModal";
 import { getActivityLabel } from "@/components/CandidateProfileModal";
 import { calculateMatch, type CandidateProfile, type MatchResult } from "@/lib/matchScoring";
+import { useUpdateApplicationStatus } from "@/hooks/useApplications";
 import StatusBadge from "@/components/employer/StatusBadge";
 import SourceLabel from "@/components/employer/SourceLabel";
 import StatusPipeline from "@/components/employer/StatusPipeline";
@@ -20,6 +21,7 @@ import EmptyState from "@/components/employer/EmptyState";
 import ChatPanel from "@/components/employer/ChatPanel";
 import EmployerCandidateSwipe from "@/components/employer/EmployerCandidateSwipe";
 import type { ApplicationStatus, ApplicationSource, DemoApplication, DemoMessage } from "@/types/application";
+import { useAuth } from "@/hooks/useAuth";
 
 const MAX_SHORTLIST = 5;
 const MAX_PICKS = 5;
@@ -79,6 +81,8 @@ function generateDemoApps(applicants: Record<string, Seeker[]>): DemoApplication
 type EmployerTab = "listings" | "swipe";
 
 const Employer = () => {
+  const { user } = useAuth();
+  const { updateStatus: updateDbStatus } = useUpdateApplicationStatus();
   const [postedJobs, setPostedJobs] = useState<Job[]>(initialJobs);
   const [applicants] = useState(generateApplicants);
   const [metrics] = useState(generateMetrics);
@@ -110,7 +114,11 @@ const Employer = () => {
 
   const updateAppStatus = useCallback((appId: string, status: ApplicationStatus) => {
     setApplications((prev) => prev.map((a) => a.id === appId ? { ...a, status } : a));
-  }, []);
+    // Also persist to DB if user is logged in
+    if (user) {
+      updateDbStatus(appId, status);
+    }
+  }, [user, updateDbStatus]);
 
   const handleViewCandidate = useCallback((seeker: Seeker, match: MatchResult, jobId: string) => {
     const app = getApp(jobId, seeker.id);
