@@ -114,10 +114,12 @@ const Auth = () => {
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
+                      id="auth-fullname"
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Twoje imię i nazwisko"
+                      autoComplete="name"
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
@@ -130,11 +132,13 @@ const Auth = () => {
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
+                  id="auth-email"
                   required
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="ty@przyklad.pl"
+                  autoComplete="email"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
@@ -145,15 +149,17 @@ const Auth = () => {
                 <label htmlFor="auth-password" className="text-xs text-muted-foreground font-medium">Hasło</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input
-                    required
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    minLength={6}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
+                    <input
+                      id="auth-password"
+                      required
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      minLength={6}
+                      autoComplete={mode === "login" ? "current-password" : "new-password"}
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
                 </div>
               </div>
             )}
