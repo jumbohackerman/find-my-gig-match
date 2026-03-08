@@ -276,7 +276,7 @@ const Index = () => {
           </motion.div>
         ) : (
           <>
-            <JobFilters filters={filters} onChange={updateFilters} />
+            <JobFilters filters={filters} onChange={handleFiltersChange} />
 
             {filteredJobs.length === 0 ? (
               <div className="text-center py-12">
