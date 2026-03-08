@@ -22,8 +22,6 @@ const Auth = () => {
       navigate(profile.role === "employer" ? "/employer" : "/", { replace: true });
     }
   }, [user, profile, authLoading, navigate]);
-  const navigate = useNavigate();
-  const location = useLocation();
   const defaultRole = (location.state as any)?.defaultRole;
   const [mode, setMode] = useState<Mode>("login");
   const [role, setRole] = useState<Role>(defaultRole === "employer" ? "employer" : "candidate");
