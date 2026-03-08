@@ -505,9 +505,8 @@ const Employer = () => {
                                 return (
                                   <div key={seeker.id} className="rounded-lg bg-secondary/50 border border-border overflow-hidden">
                                     <div
-                                      className="flex items-center gap-3 p-3 cursor-pointer hover:bg-secondary/80 transition-colors"
+                                       className="flex items-center gap-3 p-3 cursor-pointer hover:bg-secondary/80 transition-colors"
                                       onClick={() => {
-                                        const matchResult = calculateMatch(seekerToProfile(seeker), job);
                                         handleViewCandidate(seeker, matchResult, job.id);
                                       }}
                                     >
@@ -521,6 +520,7 @@ const Employer = () => {
                                           {app && app.source !== "candidate" && <SourceLabel source={app.source} />}
                                         </div>
                                       </div>
+                                      <MatchBadge result={matchResult} compact />
                                       <div className="flex flex-col items-end gap-1.5 shrink-0">
                                         <div className="flex gap-1 flex-wrap justify-end">
                                           {seeker.skills.slice(0, 2).map((skill) => (
