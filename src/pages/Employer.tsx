@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Navbar from "@/components/Navbar";
 import { createFallbackCandidate } from "@/data/defaults";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
