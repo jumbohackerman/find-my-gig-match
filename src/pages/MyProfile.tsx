@@ -690,32 +690,5 @@ function LinkField({
   );
 }
 
-function SkillRow({
-  skill, index, total, onRemove, onMove,
-}: {
-  skill: string; index: number; total: number; onRemove: (s: string) => void; onMove: (from: number, to: number) => void;
-}) {
-  return (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/50">
-      <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
-      <span className="flex-1 text-sm text-foreground">{skill}</span>
-      <div className="flex gap-1">
-        {index > 0 && (
-          <button onClick={() => onMove(index, index - 1)} className="p-0.5 text-muted-foreground hover:text-foreground">
-            <ChevronUp className="w-3.5 h-3.5" />
-          </button>
-        )}
-        {index < total - 1 && (
-          <button onClick={() => onMove(index, index + 1)} className="p-0.5 text-muted-foreground hover:text-foreground">
-            <ChevronDown className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
-      <button onClick={() => onRemove(skill)} className="p-0.5 text-muted-foreground hover:text-destructive">
-        <X className="w-3.5 h-3.5" />
-      </button>
-    </div>
-  );
-}
 
 export default MyProfile;
