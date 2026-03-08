@@ -574,6 +574,8 @@ const MyProfile = () => {
                 </div>
               </div>
             </AccordionSection>
+            </>
+          )}
           </div>
         </motion.div>
       </main>
