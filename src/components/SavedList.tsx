@@ -5,9 +5,10 @@ import type { Job } from "@/data/jobs";
 interface Props {
   jobs: Job[];
   onApply: (job: Job) => void;
+  onJobClick?: (job: Job) => void;
 }
 
-const SavedList = ({ jobs, onApply }: Props) => {
+const SavedList = ({ jobs, onApply, onJobClick }: Props) => {
   if (jobs.length === 0) {
     return (
       <div className="text-center py-12">
@@ -26,7 +27,8 @@ const SavedList = ({ jobs, onApply }: Props) => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="card-gradient rounded-xl p-4 border border-border flex items-center gap-3"
+            className="card-gradient rounded-xl p-4 border border-border flex items-center gap-3 cursor-pointer hover:border-primary/30 transition-colors"
+            onClick={() => onJobClick?.(job)}
           >
             <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-xl shrink-0">
               {job.logo}
@@ -36,7 +38,7 @@ const SavedList = ({ jobs, onApply }: Props) => {
               <p className="text-xs text-muted-foreground">{job.company} · {job.location}</p>
             </div>
             <button
-              onClick={() => onApply(job)}
+              onClick={(e) => { e.stopPropagation(); onApply(job); }}
               className="px-3 py-1.5 rounded-lg btn-gradient text-primary-foreground text-xs font-medium hover:scale-105 transition-transform"
             >
               Aplikuj
