@@ -148,8 +148,8 @@ const Index = () => {
               </div>
             ) : (
               <>
-                {/* Card stack */}
-                <div className="relative w-full" style={{ height: 'clamp(320px, 50vh, 440px)' }}>
+                {/* Card stack — overflow hidden prevents card from covering buttons */}
+                <div className="relative w-full overflow-hidden" style={{ height: 'clamp(300px, 45vh, 420px)' }}>
                   <AnimatePresence>
                     {remainingJobs.slice(0, 2).map((job, i) => (
                       <SwipeCard
@@ -167,8 +167,8 @@ const Index = () => {
                   </AnimatePresence>
                 </div>
 
-                {/* Action buttons */}
-                <div className="flex items-center gap-5 mt-4">
+                {/* Action buttons — z-10 ensures they sit above any card overflow */}
+                <div className="relative z-10 flex items-center gap-5 mt-4">
                   <button
                     onClick={() => handleSwipeWithRefetch("left")}
                     className="w-14 h-14 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"

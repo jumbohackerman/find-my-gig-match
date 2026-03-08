@@ -71,13 +71,26 @@ export function useJobFeed() {
       const job = filteredJobs[currentIndex];
       if (!job) return;
 
-      await getProvider("swipeEvents").record(userId, job.id, direction);
+      // Record swipe event — non-blocking; don't let failures stop the UX
+      try {
+        await getProvider("swipeEvents").record(userId, job.id, direction);
+      } catch (err) {
+        console.warn("[useJobFeed] swipe record failed (non-blocking):", err);
+      }
       setSwipedJobIds((prev) => new Set(prev).add(job.id));
 
       if (direction === "right") {
-        await applyToJob(job);
+        try {
+          await applyToJob(job);
+        } catch (err) {
+          console.error("[useJobFeed] apply failed:", err);
+        }
       } else if (direction === "save") {
-        await saveJob(job.id);
+        try {
+          await saveJob(job.id);
+        } catch (err) {
+          console.error("[useJobFeed] save failed:", err);
+        }
       }
 
       setCurrentIndex((prev) => prev + 1);
