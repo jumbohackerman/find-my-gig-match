@@ -99,7 +99,7 @@ const ResetPassword = () => {
             Ustaw nowe hasło
           </h2>
           <p className="text-muted-foreground text-sm mb-5">
-            Wprowadź poniżej nowe hasło.
+            Wprowadź nowe hasło (min. 6 znaków).
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">

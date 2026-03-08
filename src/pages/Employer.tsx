@@ -174,9 +174,9 @@ const Employer = () => {
                     <label className="text-xs text-muted-foreground font-medium">Lokalizacja *</label>
                     <input required value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="np. Zdalnie" className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs text-muted-foreground font-medium">Wynagrodzenie</label>
-                    <input value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} placeholder="np. 18 000 zł - 25 000 zł" className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                   <div className="space-y-1.5">
+                    <label className="text-xs text-muted-foreground font-medium">Wynagrodzenie <span className="text-muted-foreground/60 font-normal">(opcjonalne)</span></label>
+                    <input value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} placeholder="np. 18 000 zł – 25 000 zł brutto" className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-muted-foreground font-medium">Typ</label>
@@ -190,21 +190,22 @@ const Employer = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-xs text-muted-foreground font-medium">Logo (emoji)</label>
-                    <input value={form.logo} onChange={(e) => setForm({ ...form, logo: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                    <label className="text-xs text-muted-foreground font-medium">Logo (emoji) <span className="text-muted-foreground/60 font-normal">(opcjonalne)</span></label>
+                    <input value={form.logo} onChange={(e) => setForm({ ...form, logo: e.target.value })} placeholder="🏢" className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs text-muted-foreground font-medium">Tagi (po przecinku)</label>
-                    <input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="React, TypeScript" className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                    <label className="text-xs text-muted-foreground font-medium">Tagi <span className="text-muted-foreground/60 font-normal">(opcjonalne, po przecinku)</span></label>
+                    <input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="React, TypeScript, Node.js" className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs text-muted-foreground font-medium">Opis *</label>
-                  <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Opisz rolę…" rows={3} className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
+                  <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value.slice(0, 2000) })} placeholder="Opisz zakres obowiązków, wymagania i co oferujesz…" rows={3} className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
+                  <p className="text-[10px] text-muted-foreground text-right">{form.description.length}/2000</p>
                 </div>
                 <div className="flex gap-3 justify-end">
                   <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">Anuluj</button>
-                  <button type="submit" disabled={submitting} className="px-5 py-2 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-105 transition-transform disabled:opacity-50">Opublikuj</button>
+                  <button type="submit" disabled={submitting} className="px-5 py-2 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-105 transition-transform disabled:opacity-50">{submitting ? "Publikuję…" : "Opublikuj"}</button>
                 </div>
               </div>
             </motion.form>

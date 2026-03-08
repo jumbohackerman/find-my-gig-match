@@ -158,7 +158,7 @@ const Auth = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ty@przyklad.pl"
+              placeholder="jan@przyklad.pl"
                   autoComplete="email"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
@@ -176,12 +176,15 @@ const Auth = () => {
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
+                      placeholder="Min. 6 znaków"
                       minLength={6}
                       autoComplete={mode === "login" ? "current-password" : "new-password"}
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                 </div>
+                {mode === "signup" && password.length > 0 && password.length < 6 && (
+                  <p className="text-[11px] text-destructive mt-1">Hasło musi mieć co najmniej 6 znaków</p>
+                )}
               </div>
             )}
 
