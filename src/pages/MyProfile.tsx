@@ -617,6 +617,41 @@ const MyProfile = () => {
   );
 };
 
+function AccordionSection({
+  id, label, icon, isOpen, onToggle, badge, children,
+}: {
+  id: string; label: string; icon: string; isOpen: boolean; onToggle: () => void; badge?: string; children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-border overflow-hidden">
+      <button
+        onClick={onToggle}
+        className={`w-full px-4 py-3.5 flex items-center gap-3 text-left transition-colors ${
+          isOpen ? "bg-primary/5" : "hover:bg-secondary/80"
+        }`}
+      >
+        <span className="text-lg">{icon}</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-foreground">{label}</p>
+          {badge && !isOpen && (
+            <p className="text-[11px] text-muted-foreground truncate mt-0.5">{badge}</p>
+          )}
+        </div>
+        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="px-4 pb-4 pt-2 border-t border-border"
+        >
+          {children}
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
 function Field({
   label, value, onChange, placeholder,
 }: {
