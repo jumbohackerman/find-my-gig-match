@@ -36,10 +36,10 @@ const Navbar = () => {
   }, [showNotifications]);
 
   return (
-    <header className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border flex items-center justify-between gap-2" role="banner">
+    <header className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border flex items-center justify-between gap-2" role="banner" data-testid="navbar">
       <nav aria-label="Nawigacja główna" className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end w-full">
         {/* Logo */}
-        <Link to={isGuest ? "/auth" : "/"} className="flex items-center gap-2 shrink-0 mr-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg" aria-label="JobSwipe — strona główna">
+        <Link to={isGuest ? "/auth" : "/"} className="flex items-center gap-2 shrink-0 mr-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg" aria-label="JobSwipe — strona główna" data-testid="nav-logo">
           <div className="w-8 h-8 rounded-lg btn-gradient flex items-center justify-center" aria-hidden="true">
             <Briefcase className="w-4 h-4 text-primary-foreground" />
           </div>
@@ -112,6 +112,7 @@ const Navbar = () => {
                 markAllRead();
               }}
               className="p-2 rounded-xl bg-secondary text-secondary-foreground hover:bg-muted transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              data-testid="nav-notifications"
               aria-label={`Powiadomienia${unreadCount > 0 ? ` (${unreadCount} nieprzeczytanych)` : ""}`}
               aria-expanded={showNotifications}
               aria-haspopup="true"
