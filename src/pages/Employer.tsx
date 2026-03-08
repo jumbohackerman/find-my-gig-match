@@ -45,8 +45,19 @@ const Employer = () => {
 
   // ── Actions ─────────────────────────────────────────────────────────────────
 
+  const [statusPending, setStatusPending] = useState<string | null>(null);
+
   const handleAdvanceStatus = async (appId: string, newStatus: ApplicationStatus) => {
-    await appActions.advanceStatus(appId, newStatus);
+    if (statusPending) return;
+    setStatusPending(appId);
+    try {
+      await appActions.advanceStatus(appId, newStatus);
+      toast.success("Status zaktualizowany");
+    } catch {
+      toast.error("Nie udało się zmienić statusu. Spróbuj ponownie.");
+    } finally {
+      setStatusPending(null);
+    }
   };
 
   const handleViewCandidate = (app: EnrichedEmployerApplication) => {
