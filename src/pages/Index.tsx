@@ -8,28 +8,28 @@ import ApplicationStatusList from "@/components/ApplicationStatusList";
 import JobFilters, { filterJobs, defaultFilters, type JobFiltersState } from "@/components/JobFilters";
 import OnboardingModal from "@/components/OnboardingModal";
 import JobDetailModal from "@/components/JobDetailModal";
-import type { Job, Candidate } from "@/domain/models";
+import type { Job, Candidate, Notification } from "@/domain/models";
 import { useJobs } from "@/hooks/useJobs";
 import { useAuth } from "@/hooks/useAuth";
 import { useCandidateApplications } from "@/hooks/useApplications";
+import { useCandidateProfile } from "@/hooks/useCandidateProfile";
+import { useNotifications } from "@/hooks/useNotifications";
+import { usePreferences } from "@/hooks/usePreferences";
 import { supabase } from "@/integrations/supabase/client";
-import { calculateMatch, DEMO_CANDIDATE, type MatchResult } from "@/lib/matchScoring";
+import { calculateMatch, type MatchResult } from "@/lib/matchScoring";
 
 import { toast } from "sonner";
 
 type Tab = "swipe" | "applied" | "saved";
 
-interface Notification {
-  id: string;
-  message: string;
-  jobTitle: string;
-  read: boolean;
-}
-
 const Index = () => {
   const { signOut, user, profile } = useAuth();
   const { applications: dbApplications, loading: appsLoading, refetch: refetchApps } = useCandidateApplications();
   const { jobs: allJobs, loading: jobsLoading } = useJobs();
+  const { candidate: candidateProfile, updateProfile } = useCandidateProfile();
+  const { notifications, unreadCount, markAllRead } = useNotifications();
+  const { get: getPref, set: setPref } = usePreferences();
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [appliedJobs, setAppliedJobs] = useState<Job[]>([]);
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
@@ -37,17 +37,16 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<Tab>("swipe");
   const [filters, setFilters] = useState<JobFiltersState>({ ...defaultFilters });
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [candidateProfile, setCandidateProfile] = useState<Candidate>(DEMO_CANDIDATE);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
   useEffect(() => {
     if (user && profile?.role === "candidate") {
-      const onboarded = localStorage.getItem(`onboarded_${user.id}`);
-      if (!onboarded) setShowOnboarding(true);
+      getPref(`onboarded_${user.id}`).then((val) => {
+        if (!val) setShowOnboarding(true);
+      });
     }
-  }, [user, profile]);
+  }, [user, profile, getPref]);
 
   const handleOnboardingComplete = (data: {
     title: string;
@@ -57,8 +56,7 @@ const Index = () => {
     remotePreference: string;
     seniority: string;
   }) => {
-    setCandidateProfile({
-      ...candidateProfile,
+    updateProfile({
       title: data.title,
       skills: data.skills,
       salaryMin: data.salaryMin,
@@ -66,6 +64,9 @@ const Index = () => {
       workMode: data.remotePreference as Candidate["workMode"],
       seniority: data.seniority as Candidate["seniority"],
     });
+    if (user) {
+      setPref(`onboarded_${user.id}`, "true");
+    }
     setShowOnboarding(false);
   };
 
@@ -144,12 +145,6 @@ const Index = () => {
     setCurrentIndex(0);
   };
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  const markAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
-
   const tabs: { key: Tab; label: string; count?: number }[] = [
     { key: "swipe", label: "Przeglądaj" },
     { key: "applied", label: "Moje aplikacje", count: dbApplications.length },
@@ -210,8 +205,8 @@ const Index = () => {
                     <div className="max-h-60 overflow-y-auto">
                       {notifications.map((n) => (
                         <div key={n.id} className={`p-3 border-b border-border last:border-0 ${n.read ? "" : "bg-accent/5"}`}>
-                          <p className="text-xs font-medium text-foreground">{n.message}</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{n.jobTitle}</p>
+                          <p className="text-xs font-medium text-foreground">{n.title}</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{n.body}</p>
                         </div>
                       ))}
                     </div>

@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { createFallbackCandidate } from "@/data/defaults";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -40,28 +41,7 @@ function getCandidateAvatar(app: EmployerApplication): string {
 function appToCandidate(app: EmployerApplication): Candidate {
   const c = app.candidate;
   if (!c) {
-    return {
-      id: app.candidate_id,
-      userId: app.candidate_id,
-      name: "Kandydat",
-      avatar: "👤",
-      title: "",
-      location: "",
-      bio: "",
-      summary: "",
-      skills: [],
-      seniority: "Mid",
-      experience: "",
-      workMode: "Zdalnie",
-      employmentType: "Full-time",
-      availability: "Elastycznie",
-      salaryMin: 0,
-      salaryMax: 0,
-      experienceEntries: [],
-      links: {},
-      cvUrl: null,
-      lastActive: new Date().toISOString(),
-    } as Candidate;
+    return createFallbackCandidate(app.candidate_id);
   }
   return dbCandidateToCandidate(c, {
     full_name: (c as any).full_name,

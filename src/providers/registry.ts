@@ -14,7 +14,9 @@ import type {
   CandidateRepository,
   ApplicationRepository,
   MessageRepository,
+  NotificationRepository,
   ProfileRepository,
+  PreferencesRepository,
 } from "@/repositories/interfaces";
 
 import type {
@@ -30,7 +32,9 @@ import { mockJobRepository } from "@/repositories/mock/jobs";
 import { mockCandidateRepository } from "@/repositories/mock/candidates";
 import { mockApplicationRepository } from "@/repositories/mock/applications";
 import { mockMessageRepository } from "@/repositories/mock/messages";
+import { mockNotificationRepository } from "@/repositories/mock/notifications";
 import { mockProfileRepository } from "@/repositories/mock/profiles";
+import { mockPreferencesRepository } from "@/repositories/mock/preferences";
 import {
   noopAnalytics,
   noopErrorTracking,
@@ -46,7 +50,9 @@ interface ProviderMap {
   candidates: CandidateRepository;
   applications: ApplicationRepository;
   messages: MessageRepository;
+  notifications: NotificationRepository;
   profiles: ProfileRepository;
+  preferences: PreferencesRepository;
   analytics: AnalyticsService;
   errorTracking: ErrorTrackingService;
   email: EmailService;
@@ -60,7 +66,9 @@ const providers: ProviderMap = {
   candidates: mockCandidateRepository,
   applications: mockApplicationRepository,
   messages: mockMessageRepository,
+  notifications: mockNotificationRepository,
   profiles: mockProfileRepository,
+  preferences: mockPreferencesRepository,
 
   // External services — currently no-op, swap to real providers later
   analytics: noopAnalytics,
@@ -81,4 +89,9 @@ export function registerProvider<K extends keyof ProviderMap>(
   implementation: ProviderMap[K],
 ): void {
   providers[key] = implementation;
+}
+
+/** Check if we're running in demo mode (all mock providers) */
+export function isDemoMode(): boolean {
+  return providers.jobs === mockJobRepository;
 }

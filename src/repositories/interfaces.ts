@@ -14,6 +14,7 @@ import type {
   EnrichedEmployerApplication,
   UserProfile,
   Message,
+  Notification,
 } from "@/domain/models";
 
 // ─── Jobs ────────────────────────────────────────────────────────────────────
@@ -80,9 +81,29 @@ export interface MessageRepository {
   subscribe(applicationId: string, onMessage: (msg: Message) => void): () => void;
 }
 
+// ─── Notifications ───────────────────────────────────────────────────────────
+
+export interface NotificationRepository {
+  /** List notifications for a user */
+  listForUser(userId: string): Promise<Notification[]>;
+  /** Mark a notification as read */
+  markRead(notificationId: string): Promise<void>;
+  /** Mark all notifications as read */
+  markAllRead(userId: string): Promise<void>;
+}
+
 // ─── Profiles ────────────────────────────────────────────────────────────────
 
 export interface ProfileRepository {
   getByUserId(userId: string): Promise<UserProfile | null>;
   update(userId: string, data: Partial<UserProfile>): Promise<UserProfile>;
+}
+
+// ─── Preferences (localStorage / DB adapter) ─────────────────────────────────
+
+export interface PreferencesRepository {
+  /** Get a preference value by key */
+  get(userId: string, key: string): Promise<string | null>;
+  /** Set a preference value */
+  set(userId: string, key: string, value: string): Promise<void>;
 }

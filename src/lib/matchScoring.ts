@@ -1,6 +1,6 @@
 /**
  * Match scoring engine.
- * Uses domain Candidate model. Eliminates the old CandidateProfile type.
+ * Uses domain Candidate model. Pure domain logic — no demo data here.
  * Weights: skills 40%, seniority 15%, salary 15%, location 15%, work_mode 15%.
  */
 
@@ -10,30 +10,6 @@ export type { MatchResult, ScoreBreakdown } from "@/domain/models";
 
 /** Subset of Job fields needed for scoring (avoids importing full Job in tests) */
 export type JobForScoring = Pick<Job, "tags" | "salary" | "location" | "type" | "title" | "description">;
-
-// Default demo candidate — used when no real profile is loaded
-export const DEMO_CANDIDATE: Candidate = {
-  id: "demo",
-  userId: "demo",
-  name: "Demo User",
-  avatar: "👤",
-  title: "Frontend Developer",
-  location: "Warszawa",
-  bio: "",
-  summary: "",
-  skills: ["React", "TypeScript", "Node.js", "GraphQL", "Tailwind CSS", "Next.js"],
-  seniority: "Senior",
-  experience: "5 lat",
-  workMode: "Zdalnie",
-  employmentType: "Full-time",
-  availability: "Elastycznie",
-  salaryMin: 18000,
-  salaryMax: 28000,
-  experienceEntries: [],
-  links: {},
-  cvUrl: null,
-  lastActive: new Date().toISOString(),
-};
 
 function parseSalaryRange(salary: string): { min: number; max: number } | null {
   const plnMatch = salary.match(/(\d[\d\s]*)\s*zł\s*-\s*(\d[\d\s]*)\s*zł/i);
@@ -91,7 +67,6 @@ function computeWorkModeScore(candidate: Candidate, job: JobForScoring): { score
 
 /** Convert Candidate salaryMin/salaryMax to thousands for scoring comparison */
 function candidateSalaryInThousands(candidate: Candidate): { min: number; max: number } {
-  // If values are > 1000, assume they're in PLN; convert to thousands
   const min = candidate.salaryMin > 1000 ? candidate.salaryMin / 1000 : candidate.salaryMin;
   const max = candidate.salaryMax > 1000 ? candidate.salaryMax / 1000 : candidate.salaryMax;
   return { min, max };
@@ -250,7 +225,6 @@ export function dbCandidateToCandidate(row: {
 
 /**
  * @deprecated Use `calculateMatch(candidate, job)` directly with a Candidate.
- * Kept only for backward compatibility during migration.
  */
 export type CandidateProfile = Candidate;
 
