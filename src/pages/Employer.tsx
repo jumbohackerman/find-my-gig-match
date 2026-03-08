@@ -97,7 +97,7 @@ const Employer = () => {
   const [applicants] = useState(generateApplicants);
   const [metrics] = useState(generateMetrics);
   const [applications, setApplications] = useState<DemoApplication[]>(() => generateDemoApps(applicants));
-  const [messages, setMessages] = useState<DemoMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const [analyzedJob, setAnalyzedJob] = useState<string | null>(null);
   const [swipeJob, setSwipeJob] = useState<string | null>(null);
