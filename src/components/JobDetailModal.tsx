@@ -95,7 +95,7 @@ const JobDetailModal = ({ job, matchResult, onClose, onApply }: Props) => {
                   <MapPin className="w-3 h-3" aria-hidden="true" /> {job.location}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" aria-hidden="true" /> {formatPostedDate(job.posted)}
+                  <Clock className="w-3 h-3" aria-hidden="true" /> {timeAgo(job.posted)}
                 </span>
               </div>
             </div>

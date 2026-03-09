@@ -110,7 +110,7 @@ const SwipeCard = ({ job, onSwipe, isTop, matchResult, isSaved, onTap, forcedExi
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-display text-sm text-muted-foreground truncate">{job.company}</h3>
-              <p className="text-xs text-muted-foreground">{formatPosted(job.posted)}</p>
+              <p className="text-xs text-muted-foreground">{timeAgo(job.posted)}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {isSaved && (
@@ -161,7 +161,7 @@ const SwipeCard = ({ job, onSwipe, isTop, matchResult, isSaved, onTap, forcedExi
             </div>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
-              {formatPosted(job.posted)}
+              {timeAgo(job.posted)}
             </div>
           </div>
 
