@@ -72,7 +72,7 @@ const ChatPanel = ({ messages, onSend, candidateName, isUnlocked, onUnlock, curr
           <EmptyState
             icon={<MessageSquare className="w-5 h-5 text-muted-foreground" />}
             title="Brak wiadomości"
-            description="Rozpocznij rozmowę z kandydatem."
+            description="Rozpocznij rozmowę, wysyłając pierwszą wiadomość poniżej."
           />
         ) : (
           <AnimatePresence>
