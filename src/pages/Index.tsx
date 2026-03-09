@@ -64,8 +64,10 @@ function filtersToParams(f: JobFiltersState, sp: URLSearchParams): URLSearchPara
 const Index = () => {
   useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { candidate } = useCandidateProfile();
   const { applications: dbApplications, loading: appsLoading, refetch: refetchApps } = useCandidateApplications();
   const { showOnboarding, completeOnboarding, dismissOnboarding } = useOnboarding();
+  const [hideSuggestion, setHideSuggestion] = useState(false);
   const { recentEntries, trackView, clear: clearRecent, count: recentCount } = useRecentlyViewed();
 
   const {
