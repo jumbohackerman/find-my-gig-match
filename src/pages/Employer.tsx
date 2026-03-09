@@ -190,6 +190,18 @@ const Employer = () => {
                     </li>
                   ))}
                 </ul>
+                <div className="mt-4 flex gap-2">
+                  {!domainJobs.length && (
+                    <button onClick={() => setShowForm(true)} className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium shadow-glow hover:scale-105 transition-transform">
+                      Dodaj ogłoszenie
+                    </button>
+                  )}
+                  {!(user?.user_metadata?.full_name || profile?.full_name) && (
+                     <Link to="/profile" className="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium border border-border hover:bg-muted transition-colors">
+                        Przejdź do profilu
+                     </Link>
+                  )}
+                </div>
               </div>
             </motion.div>
           );
@@ -263,7 +275,15 @@ const Employer = () => {
         {domainJobs.length === 0 ? (
           <EmptyState
             title="Brak ogłoszeń"
-            description="Dodaj swoje pierwsze ogłoszenie lub poczekaj na aplikacje."
+            description="Twoja tablica jest pusta. Dodaj pierwsze ogłoszenie, aby zacząć przyciągać kandydatów."
+            action={
+              <button
+                onClick={() => setShowForm(true)}
+                className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium shadow-glow hover:scale-105 transition-transform"
+              >
+                Dodaj ogłoszenie
+              </button>
+            }
           />
         ) : (
           <LocalErrorBoundary label="Lista ogłoszeń">
@@ -388,22 +408,40 @@ const Employer = () => {
                     </div>
 
                     {/* Shortlist section */}
-                    {shortlisted.length > 0 && (
+                    {(shortlisted.length > 0 || (isExpanded && jobApps.length > 0)) && (
                       <div className="px-4 pb-3 border-t border-border pt-3">
                         <h5 className="text-xs font-semibold text-accent uppercase tracking-wider mb-2 flex items-center gap-1.5">
                           <Layers className="w-3.5 h-3.5" /> Shortlista ({shortlisted.length}/{MAX_SHORTLIST})
                         </h5>
-                        <div className="flex flex-wrap gap-2">
-                          {shortlisted.map((app) => (
-                            <ShortlistChip
-                              key={app.id}
-                              app={app}
-                              onRemove={() => handleAdvanceStatus(app.id, "applied")}
-                              isReplaceTarget={shortlist.replacingFor?.jobId === job.id}
-                              onReplace={() => shortlist.replaceShortlisted(app.id)}
+                        {shortlisted.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {shortlisted.map((app) => (
+                              <ShortlistChip
+                                key={app.id}
+                                app={app}
+                                onRemove={() => handleAdvanceStatus(app.id, "applied")}
+                                isReplaceTarget={shortlist.replacingFor?.jobId === job.id}
+                                onReplace={() => shortlist.replaceShortlisted(app.id)}
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="py-2">
+                            <EmptyState
+                              icon={<Layers className="w-4 h-4 text-muted-foreground" />}
+                              title="Pusta shortlista"
+                              description="Wybierz kandydatów ręcznie z listy poniżej lub pozwól AI wytypować najlepszych."
+                              action={
+                                <button
+                                  onClick={() => shortlist.generateShortlist(job.id, jobApps)}
+                                  className="px-4 py-2 rounded-lg text-xs font-medium bg-accent/15 text-accent hover:bg-accent/25 transition-colors flex items-center gap-1.5"
+                                >
+                                  <Zap className="w-3.5 h-3.5" /> Wygeneruj przez AI
+                                </button>
+                              }
                             />
-                          ))}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -450,7 +488,7 @@ const Employer = () => {
                             {jobApps.length === 0 ? (
                               <EmptyState
                                 title="Brak kandydatów"
-                                description="Udostępnij ogłoszenie, aby otrzymać aplikacje."
+                                description="Ogłoszenie jest aktywne, ale nikt jeszcze nie zaaplikował. Upewnij się, że opis i tagi są zachęcające."
                               />
                             ) : (
                               <div className="space-y-2">
@@ -486,7 +524,10 @@ const Employer = () => {
                               <Zap className="w-3.5 h-3.5" /> Analiza AI — ranking kandydatów
                             </h5>
                             {jobApps.length === 0 ? (
-                              <EmptyState title="Brak kandydatów" description="Poczekaj na pierwsze aplikacje, aby uruchomić analizę." />
+                              <EmptyState 
+                                title="Brak kandydatów" 
+                                description="Poczekaj na pierwsze aplikacje, aby uruchomić analizę AI i wygenerować ranking." 
+                              />
                             ) : (
                               <div className="space-y-3">
                                 {jobApps.map((app, idx) => (
