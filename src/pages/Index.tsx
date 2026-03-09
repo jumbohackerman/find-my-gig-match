@@ -16,10 +16,12 @@ import OnboardingModal from "@/components/OnboardingModal";
 import JobDetailModal from "@/components/JobDetailModal";
 import type { Job } from "@/domain/models";
 import { useAuth } from "@/hooks/useAuth";
+import { useCandidateProfile } from "@/hooks/useCandidateProfile";
 import { useCandidateApplications } from "@/hooks/useApplications";
 import { useJobFeed } from "@/hooks/useJobFeed";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
+import { Link } from "react-router-dom";
 
 type Tab = "swipe" | "applied" | "saved" | "recent";
 const VALID_TABS: Tab[] = ["swipe", "applied", "saved", "recent"];
