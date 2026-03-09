@@ -51,16 +51,21 @@ function computeCompleteness(data: {
   title: string;
   location: string;
 }) {
+  const missing: string[] = [];
   let score = 0;
   const total = 7;
-  if (data.title.trim()) score++;
-  if (data.location.trim()) score++;
-  if (data.summary.trim()) score++;
-  if (data.skills.length >= 3) score++;
-  if (data.experience_entries.length > 0) score++;
-  if (data.salary_min > 0) score++;
-  if (data.links.portfolio || data.links.github || data.links.linkedin || data.links.website) score++;
-  return Math.round((score / total) * 100);
+  if (data.title.trim()) score++; else missing.push("Dodaj tytuł zawodowy");
+  if (data.location.trim()) score++; else missing.push("Dodaj lokalizację");
+  if (data.summary.trim()) score++; else missing.push("Dodaj podsumowanie zawodowe");
+  if (data.skills.length >= 3) score++; else missing.push("Dodaj co najmniej 3 umiejętności");
+  if (data.experience_entries.length > 0) score++; else missing.push("Dodaj doświadczenie zawodowe");
+  if (data.salary_min > 0) score++; else missing.push("Ustaw oczekiwania finansowe");
+  if (data.links.portfolio || data.links.github || data.links.linkedin || data.links.website) score++; else missing.push("Dodaj co najmniej jeden link");
+  
+  return {
+    score: Math.round((score / total) * 100),
+    missing
+  };
 }
 
 const MyProfile = () => {
