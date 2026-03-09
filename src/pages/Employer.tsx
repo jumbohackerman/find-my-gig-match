@@ -310,6 +310,12 @@ const Employer = () => {
                     </div>
 
                     <div className="p-4 pt-2">
+                      {/* Contextual Suggestion UX */}
+                      {(job.tags.length === 0 || job.description.length < 50) && job.employerId === user?.id && (
+                        <div className="mb-3 p-2.5 rounded-lg bg-yellow-400/10 border border-yellow-400/20 text-xs text-yellow-500 font-medium">
+                          Wskazówka: Dodaj tagi i dłuższy opis, aby poprawić jakość dopasowań AI.
+                        </div>
+                      )}
                       <div className="flex items-center gap-3 mb-2">
                         <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-xl shrink-0">
                           {job.logo}
