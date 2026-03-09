@@ -720,8 +720,6 @@ const MyProfile = () => {
             links: links,
             cvUrl: cvUrl,
             lastActive: new Date().toISOString(),
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
             bio: "",
           }}
           onClose={() => setShowPreview(false)}
