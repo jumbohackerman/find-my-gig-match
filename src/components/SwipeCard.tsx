@@ -5,15 +5,7 @@ import MatchBadge from "@/components/MatchBadge";
 import type { Job } from "@/domain/models";
 import type { MatchResult } from "@/lib/matchScoring";
 
-function formatPosted(raw: string): string {
-  if (!raw) return "";
-  const date = new Date(raw);
-  if (isNaN(date.getTime())) return raw;
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}.${month}.${year}`;
-}
+import { timeAgo } from "@/lib/timeAgo";
 
 interface SwipeCardProps {
   job: Job;
