@@ -342,6 +342,27 @@ const Index = () => {
               </motion.div>
             ) : (
               <div className="flex-1 flex flex-col items-center min-h-0 w-full">
+                {/* Contextual Suggestion UX */}
+                {!hideSuggestion && (!candidate.cvUrl || savedJobs.length > 0) && (
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="w-full mb-3 flex items-center justify-between p-3 rounded-xl bg-secondary/60 border border-border">
+                    <div className="flex-1 min-w-0 pr-2">
+                      <p className="text-xs font-medium text-foreground">
+                        {!candidate.cvUrl 
+                          ? "Zwiększ szanse na odpowiedź. Dodaj CV do profilu." 
+                          : `Masz ${savedJobs.length} zapisan${savedJobs.length === 1 ? "ą" : savedJobs.length > 1 && savedJobs.length < 5 ? "e" : "ych"} ofert${savedJobs.length === 1 ? "ę" : "y"}. Zobacz je!`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {!candidate.cvUrl ? (
+                        <Link to="/profile" className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground">Dodaj CV</Link>
+                      ) : (
+                        <button onClick={() => changeTab("saved")} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground">Przejdź</button>
+                      )}
+                      <button onClick={() => setHideSuggestion(true)} className="p-1 rounded-lg text-muted-foreground hover:bg-secondary transition-colors"><X className="w-4 h-4" /></button>
+                    </div>
+                  </motion.div>
+                )}
+
                 {/* Card stack — overflow-visible allows exit animation to fly beyond container */}
                 <div className="relative w-full flex-1 min-h-0 overflow-visible">
                   <AnimatePresence>
