@@ -1,67 +1,45 @@
+import { useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X, MapPin, Clock, Globe, Github, Linkedin, ExternalLink,
   FileText, Briefcase,
 } from "lucide-react";
-import type { Seeker } from "@/data/seekers";
-import type { MatchResult } from "@/lib/matchScoring";
+import type { Candidate, MatchResult } from "@/domain/models";
+import { getActivityLabel } from "@/domain/models";
 import MatchBadge from "@/components/MatchBadge";
-
-interface ExperienceEntry {
-  title: string;
-  company: string;
-  startDate: string;
-  endDate: string;
-  bullets: string[];
-}
-
-interface Links {
-  portfolio?: string;
-  github?: string;
-  linkedin?: string;
-  website?: string;
-}
-
-interface ExtendedSeeker extends Seeker {
-  seniority?: string;
-  summary?: string;
-  work_mode?: string;
-  experience_entries?: ExperienceEntry[];
-  links?: Links;
-  cv_url?: string;
-  last_active?: string;
-  salary_min?: number;
-  salary_max?: number;
-}
+import ReportButton from "@/components/ReportButton";
+import LocalErrorBoundary from "@/components/LocalErrorBoundary";
 
 interface Props {
-  seeker: ExtendedSeeker | null;
+  candidate: Candidate | null;
   match?: MatchResult;
   onClose: () => void;
 }
 
-function getActivityLabel(lastActive?: string): { label: string; color: string } {
-  if (!lastActive) return { label: "Unknown", color: "text-muted-foreground" };
-  const diff = Date.now() - new Date(lastActive).getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  if (days === 0) return { label: "Active today", color: "text-accent" };
-  if (days <= 3) return { label: `Active ${days}d ago`, color: "text-yellow-400" };
-  if (days <= 7) return { label: "Active 1 week ago", color: "text-muted-foreground" };
-  return { label: `Active ${days}d ago`, color: "text-muted-foreground" };
-}
+const CandidateProfileModal = ({ candidate, match, onClose }: Props) => {
+  const closeRef = useRef<HTMLButtonElement>(null);
 
-const CandidateProfileModal = ({ seeker, match, onClose }: Props) => {
-  if (!seeker) return null;
+  // ESC to close + auto-focus
+  useEffect(() => {
+    if (!candidate) return;
+    requestAnimationFrame(() => closeRef.current?.focus());
+    const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [candidate, onClose]);
 
-  const activity = getActivityLabel(seeker.last_active);
-  const coreSkills = seeker.skills.slice(0, 5);
-  const additionalSkills = seeker.skills.slice(5);
-  const links = seeker.links || {};
+  if (!candidate) return null;
+
+  const activity = getActivityLabel(candidate.lastActive);
+  const coreSkills = candidate.skills.slice(0, 5);
+  const additionalSkills = candidate.skills.slice(5);
+  const links = candidate.links || {};
   const hasLinks = links.portfolio || links.github || links.linkedin || links.website;
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-4" onClick={onClose}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-4" onClick={onClose} role="dialog" aria-modal="true" aria-label={`Profil kandydata: ${candidate.name}`}>
+        <LocalErrorBoundary label="Profil kandydata">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -69,24 +47,27 @@ const CandidateProfileModal = ({ seeker, match, onClose }: Props) => {
           className="w-full max-w-lg max-h-[85vh] overflow-y-auto card-gradient rounded-2xl border border-border p-5 relative"
           onClick={(e) => e.stopPropagation()}
         >
-          <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground z-10">
-            <X className="w-5 h-5" />
-          </button>
+          <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+            <ReportButton targetType="profile" targetId={candidate.id} targetLabel={candidate.name} />
+            <button ref={closeRef} onClick={onClose} className="text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg p-1" aria-label="Zamknij">
+              <X className="w-5 h-5" aria-hidden="true" />
+            </button>
+          </div>
 
           {/* Hero */}
           <div className="flex items-center gap-4 mb-4">
             <div className="w-16 h-16 rounded-xl bg-secondary flex items-center justify-center text-4xl">
-              {seeker.avatar}
+              {candidate.avatar}
             </div>
             <div className="flex-1">
-              <h3 className="font-display text-xl font-bold text-foreground">{seeker.name}</h3>
-              <p className="text-sm text-primary font-medium">{seeker.title}</p>
+              <h3 className="font-display text-xl font-bold text-foreground">{candidate.name}</h3>
+              <p className="text-sm text-primary font-medium">{candidate.title}</p>
               <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" /> {seeker.location}
+                  <MapPin className="w-3 h-3" /> {candidate.location}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {seeker.experience}
+                  <Clock className="w-3 h-3" /> {candidate.experience}
                 </span>
               </div>
             </div>
@@ -95,16 +76,16 @@ const CandidateProfileModal = ({ seeker, match, onClose }: Props) => {
           {/* Badges */}
           <div className="flex items-center gap-2 mb-4">
             <span className="px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-medium">
-              {seeker.availability}
+              {candidate.availability}
             </span>
-            {seeker.seniority && (
+            {candidate.seniority && (
               <span className="px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-medium">
-                {seeker.seniority}
+                {candidate.seniority}
               </span>
             )}
-            {seeker.work_mode && (
+            {candidate.workMode && (
               <span className="px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-medium">
-                {seeker.work_mode}
+                {candidate.workMode}
               </span>
             )}
             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${activity.color} bg-secondary`}>
@@ -120,17 +101,17 @@ const CandidateProfileModal = ({ seeker, match, onClose }: Props) => {
           )}
 
           {/* Summary */}
-          {seeker.summary && (
+          {candidate.summary && (
             <div className="mb-4">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Summary</h4>
-              <p className="text-sm text-foreground leading-relaxed">{seeker.summary}</p>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Podsumowanie</h4>
+              <p className="text-sm text-foreground leading-relaxed">{candidate.summary}</p>
             </div>
           )}
 
           {/* Skills */}
           <div className="mb-4">
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              Skills
+              Umiejętności
             </h4>
             {coreSkills.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-1.5">
@@ -163,11 +144,11 @@ const CandidateProfileModal = ({ seeker, match, onClose }: Props) => {
           </div>
 
           {/* Experience */}
-          {seeker.experience_entries && seeker.experience_entries.length > 0 && (
+          {candidate.experienceEntries && candidate.experienceEntries.length > 0 && (
             <div className="mb-4">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Experience</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Doświadczenie</h4>
               <div className="space-y-3">
-                {seeker.experience_entries.map((entry, idx) => (
+                {candidate.experienceEntries.map((entry, idx) => (
                   <div key={idx} className="pl-3 border-l-2 border-border">
                     <p className="text-sm font-medium text-foreground">
                       {entry.title}{entry.company ? ` — ${entry.company}` : ""}
@@ -187,13 +168,16 @@ const CandidateProfileModal = ({ seeker, match, onClose }: Props) => {
           )}
 
           {/* Salary */}
-          {seeker.salary_min && seeker.salary_min > 0 && (
+          {candidate.salaryMin && candidate.salaryMin > 0 && (
             <div className="mb-4">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                Salary Expectation
+                Oczekiwania finansowe
               </h4>
               <p className="text-sm text-foreground">
-                ${seeker.salary_min}k – ${seeker.salary_max || seeker.salary_min}k / year
+                {candidate.salaryMin > 1000
+                  ? `${(candidate.salaryMin / 1000).toFixed(0)} 000 zł – ${((candidate.salaryMax || candidate.salaryMin) / 1000).toFixed(0)} 000 zł brutto / mies.`
+                  : `${candidate.salaryMin} 000 zł – ${candidate.salaryMax || candidate.salaryMin} 000 zł brutto / mies.`
+                }
               </p>
             </div>
           )}
@@ -201,7 +185,7 @@ const CandidateProfileModal = ({ seeker, match, onClose }: Props) => {
           {/* Links */}
           {hasLinks && (
             <div className="mb-2">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Links</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Linki</h4>
               <div className="flex gap-2">
                 {links.portfolio && (
                   <a href={links.portfolio} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
@@ -228,20 +212,18 @@ const CandidateProfileModal = ({ seeker, match, onClose }: Props) => {
           )}
 
           {/* CV */}
-          {seeker.cv_url && (
+          {candidate.cvUrl && (
             <div className="pt-2 border-t border-border">
               <span className="flex items-center gap-1.5 text-xs text-accent">
-                <FileText className="w-3.5 h-3.5" /> CV available
+                <FileText className="w-3.5 h-3.5" /> CV dostępne
               </span>
             </div>
           )}
         </motion.div>
+        </LocalErrorBoundary>
       </div>
     </AnimatePresence>
   );
 };
 
 export default CandidateProfileModal;
-
-export { getActivityLabel };
-export type { ExtendedSeeker };

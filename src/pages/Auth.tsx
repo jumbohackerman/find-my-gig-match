@@ -1,21 +1,39 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Briefcase, Mail, Lock, User, ArrowRight, ArrowLeft } from "lucide-react";
+import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 type Mode = "login" | "signup" | "forgot";
 type Role = "candidate" | "employer";
 
 const Auth = () => {
+  const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Redirect already-authenticated users to their home
+  useEffect(() => {
+    if (authLoading) return;
+    if (user && profile) {
+      navigate(profile.role === "employer" ? "/employer" : "/", { replace: true });
+    }
+  }, [user, profile, authLoading, navigate]);
+  const defaultRole = (location.state as any)?.defaultRole;
   const [mode, setMode] = useState<Mode>("login");
-  const [role, setRole] = useState<Role>("candidate");
+  const [role, setRole] = useState<Role>(defaultRole === "employer" ? "employer" : "candidate");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Determine where to send user after auth based on role
+  const getPostAuthRedirect = (userRole?: string) => {
+    return userRole === "employer" ? "/employer" : "/";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +45,7 @@ const Auth = () => {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
-        toast.success("Check your email for a password reset link!");
+        toast.success("Sprawdź email — wysłaliśmy link do resetowania hasła!");
         setMode("login");
       } else if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
@@ -41,24 +59,32 @@ const Auth = () => {
         if (error) throw error;
 
         if (data.session) {
-          navigate("/");
+          navigate(getPostAuthRedirect(role));
         } else {
-          toast.success("Check your email to confirm your account!");
+          toast.success("Sprawdź email, aby potwierdzić konto!");
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate("/");
+        // Fetch profile role to redirect correctly
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .maybeSingle();
+        navigate(getPostAuthRedirect(profileData?.role));
       }
     } catch (err: any) {
-      toast.error(err.message || "Something went wrong");
+      toast.error(err.message || "Coś poszło nie tak");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex flex-col">
+      <Navbar />
+      <div className="flex-1 flex flex-col items-center justify-center px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -73,17 +99,17 @@ const Auth = () => {
 
         <div className="card-gradient rounded-2xl border border-border p-6">
           <h2 className="font-display text-lg font-bold text-foreground mb-1">
-            {mode === "login" ? "Welcome back" : mode === "signup" ? "Create account" : "Reset password"}
+            {mode === "login" ? "Witaj ponownie" : mode === "signup" ? "Utwórz konto" : "Resetuj hasło"}
           </h2>
           <p className="text-muted-foreground text-sm mb-5">
             {mode === "login"
-              ? "Sign in to continue swiping."
+              ? "Zaloguj się, aby kontynuować przeglądanie."
               : mode === "signup"
-              ? "Join as a candidate or employer."
-              : "Enter your email to receive a reset link."}
+              ? "Dołącz jako kandydat lub pracodawca."
+              : "Podaj email, aby otrzymać link do resetowania."}
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" data-testid="auth-form" aria-label={mode === "login" ? "Formularz logowania" : mode === "signup" ? "Formularz rejestracji" : "Formularz resetowania hasła"}>
             {mode === "signup" && (
               <>
                 {/* Role selector */}
@@ -93,26 +119,30 @@ const Auth = () => {
                       type="button"
                       key={r}
                       onClick={() => setRole(r)}
+                      data-testid={`auth-role-${r}`}
                       className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
                         role === r
                           ? "btn-gradient text-primary-foreground shadow-glow"
                           : "bg-secondary text-secondary-foreground hover:bg-muted"
                       }`}
                     >
-                      {r === "candidate" ? "🧑‍💻 Candidate" : "🏢 Employer"}
+                      {r === "candidate" ? "🧑‍💻 Kandydat" : "🏢 Pracodawca"}
                     </button>
                   ))}
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs text-muted-foreground font-medium">Full Name</label>
+                  <label htmlFor="auth-fullname" className="text-xs text-muted-foreground font-medium">Imię i nazwisko</label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
+                      id="auth-fullname"
                       required
+                      data-testid="auth-fullname"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Your name"
+                      placeholder="Twoje imię i nazwisko"
+                      autoComplete="name"
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
@@ -121,15 +151,18 @@ const Auth = () => {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs text-muted-foreground font-medium">Email</label>
+              <label htmlFor="auth-email" className="text-xs text-muted-foreground font-medium">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
+                  id="auth-email"
                   required
                   type="email"
+                  data-testid="auth-email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+              placeholder="jan@przyklad.pl"
+                  autoComplete="email"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
@@ -137,19 +170,25 @@ const Auth = () => {
 
             {mode !== "forgot" && (
               <div className="space-y-1.5">
-                <label className="text-xs text-muted-foreground font-medium">Password</label>
+                <label htmlFor="auth-password" className="text-xs text-muted-foreground font-medium">Hasło</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input
-                    required
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    minLength={6}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
+                    <input
+                      id="auth-password"
+                      required
+                      type="password"
+                      data-testid="auth-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Min. 6 znaków"
+                      minLength={6}
+                      autoComplete={mode === "login" ? "current-password" : "new-password"}
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
                 </div>
+                {mode === "signup" && password.length > 0 && password.length < 6 && (
+                  <p className="text-[11px] text-destructive mt-1">Hasło musi mieć co najmniej 6 znaków</p>
+                )}
               </div>
             )}
 
@@ -160,7 +199,7 @@ const Auth = () => {
                   onClick={() => setMode("forgot")}
                   className="text-xs text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Forgot password?
+                  Nie pamiętasz hasła?
                 </button>
               </div>
             )}
@@ -168,17 +207,27 @@ const Auth = () => {
             <button
               type="submit"
               disabled={loading}
+              data-testid="auth-submit"
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl btn-gradient text-primary-foreground text-sm font-medium shadow-glow hover:scale-[1.02] transition-transform disabled:opacity-50"
             >
               {loading
-                ? "Loading…"
+                ? "Proszę czekać…"
                 : mode === "login"
-                ? "Sign In"
+                ? "Zaloguj się"
                 : mode === "signup"
-                ? "Create Account"
-                : "Send Reset Link"}
+                ? "Utwórz konto"
+                : "Wyślij link resetowania"}
               <ArrowRight className="w-4 h-4" />
             </button>
+
+            {mode === "signup" && (
+              <p className="text-[11px] text-muted-foreground text-center mt-2 leading-relaxed">
+                Rejestrując się, akceptujesz{" "}
+                <Link to="/terms" className="text-primary hover:underline">Regulamin</Link>
+                {" "}oraz{" "}
+                <Link to="/privacy" className="text-primary hover:underline">Politykę Prywatności</Link>.
+              </p>
+            )}
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-4">
@@ -187,29 +236,25 @@ const Auth = () => {
                 onClick={() => setMode("login")}
                 className="text-primary font-medium hover:underline inline-flex items-center gap-1"
               >
-                <ArrowLeft className="w-3 h-3" /> Back to sign in
+                <ArrowLeft className="w-3 h-3" /> Wróć do logowania
               </button>
             ) : (
               <>
-                {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
+                {mode === "login" ? "Nie masz konta?" : "Masz już konto?"}{" "}
                 <button
                   onClick={() => setMode(mode === "login" ? "signup" : "login")}
                   className="text-primary font-medium hover:underline"
+                  data-testid="auth-toggle-mode"
                 >
-                  {mode === "login" ? "Sign up" : "Sign in"}
+                  {mode === "login" ? "Zarejestruj się" : "Zaloguj się"}
                 </button>
               </>
             )}
           </p>
         </div>
 
-        <button
-          onClick={() => navigate("/")}
-          className="mt-4 w-full py-2.5 rounded-xl border border-dashed border-border text-muted-foreground text-sm font-medium hover:bg-secondary transition-colors"
-        >
-          🚀 Demo — skip login
-        </button>
       </motion.div>
+      </div>
     </div>
   );
 };
