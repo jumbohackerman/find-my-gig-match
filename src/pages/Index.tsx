@@ -207,7 +207,7 @@ const Index = () => {
   }
 
   return (
-    <div className="h-[100dvh] bg-background flex flex-col overflow-hidden safe-bottom">
+    <div className="h-[100dvh] bg-background flex flex-col overflow-x-clip overflow-y-hidden safe-bottom">
 
 
       <Navbar />
