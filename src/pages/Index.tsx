@@ -199,7 +199,7 @@ const Index = () => {
             <div key={l} className="px-3 sm:px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-xs sm:text-sm font-medium opacity-50">{l}</div>
           ))}
         </div>
-        <main className="flex-1 flex flex-col items-center px-3 sm:px-4 py-4 max-w-[min(28rem,100%)] sm:max-w-md mx-auto w-full">
+        <main className="flex-1 flex flex-col items-center px-3 sm:px-4 py-4 w-full max-w-lg lg:max-w-xl mx-auto">
           <SwipeCardSkeleton />
         </main>
       </div>
@@ -207,7 +207,7 @@ const Index = () => {
   }
 
   return (
-    <div className="h-[100dvh] bg-background flex flex-col overflow-hidden safe-bottom">
+    <div className="h-[100dvh] bg-background flex flex-col overflow-x-clip overflow-y-hidden safe-bottom">
 
 
       <Navbar />
@@ -240,7 +240,7 @@ const Index = () => {
         ))}
       </div>
 
-      <main className={`flex-1 flex flex-col items-center px-3 sm:px-4 lg:px-6 py-2 sm:py-4 max-w-[min(28rem,100%)] sm:max-w-md lg:max-w-lg mx-auto w-full min-h-0 ${activeTab === "swipe" ? "overflow-hidden" : "overflow-y-auto"}`}>
+      <main className={`flex-1 flex flex-col items-center px-3 sm:px-4 lg:px-6 py-2 sm:py-4 w-full max-w-lg lg:max-w-xl mx-auto min-h-0 ${activeTab === "swipe" ? "" : "overflow-y-auto"}`}>
         <LocalErrorBoundary label="Panel">
         {activeTab === "applied" ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full">
@@ -341,7 +341,7 @@ const Index = () => {
                 </div>
               </motion.div>
             ) : (
-              <div className="flex-1 flex flex-col items-center min-h-0 w-full overflow-hidden">
+              <div className="flex-1 flex flex-col items-center min-h-0 w-full">
                 {/* Contextual Suggestion UX */}
                 {!hideSuggestion && (!candidate.cvUrl || savedJobs.length > 0) && (
                   <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="w-full mb-3 flex items-center justify-between p-3 rounded-xl bg-secondary/60 border border-border">
@@ -364,7 +364,7 @@ const Index = () => {
                 )}
 
                 {/* Card stack */}
-                <div className="relative w-full flex-1 min-h-0 overflow-hidden">
+                <div className="relative w-full flex-1 min-h-0">
                   <AnimatePresence>
                     {remainingJobs.slice(0, 2).map((job, i) => (
                       <SwipeCard
