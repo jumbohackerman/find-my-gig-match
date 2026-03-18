@@ -240,7 +240,7 @@ const Index = () => {
         ))}
       </div>
 
-      <main className={`flex-1 flex flex-col items-center px-4 py-4 max-w-md mx-auto w-full min-h-0 ${activeTab === "swipe" ? "overflow-y-clip" : "overflow-y-auto"}`}>
+      <main className={`flex-1 flex flex-col items-center px-3 sm:px-4 lg:px-6 py-2 sm:py-4 max-w-[min(28rem,100%)] sm:max-w-md lg:max-w-lg mx-auto w-full min-h-0 ${activeTab === "swipe" ? "overflow-hidden" : "overflow-y-auto"}`}>
         <LocalErrorBoundary label="Panel">
         {activeTab === "applied" ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full">
