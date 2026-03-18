@@ -364,7 +364,7 @@ const Index = () => {
                 )}
 
                 {/* Card stack */}
-                <div className="relative w-full flex-1 min-h-0 overflow-hidden">
+                <div className="relative w-full flex-1 min-h-0">
                   <AnimatePresence>
                     {remainingJobs.slice(0, 2).map((job, i) => (
                       <SwipeCard
