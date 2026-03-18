@@ -363,8 +363,8 @@ const Index = () => {
                   </motion.div>
                 )}
 
-                {/* Card stack — overflow-visible allows exit animation to fly beyond container */}
-                <div className="relative w-full flex-1 min-h-0 overflow-visible">
+                {/* Card stack */}
+                <div className="relative w-full flex-1 min-h-0 overflow-hidden">
                   <AnimatePresence>
                     {remainingJobs.slice(0, 2).map((job, i) => (
                       <SwipeCard
