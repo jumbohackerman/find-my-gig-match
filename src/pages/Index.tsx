@@ -230,8 +230,8 @@ const Index = () => {
         </div>
       </div>
 
-      <main className="flex-1 min-h-0 w-full px-4 sm:px-6 pb-4 pt-2 sm:pt-4">
-        <div className={`browse-shell h-full min-h-0 ${activeTab === "swipe" ? "flex flex-col" : "overflow-y-auto"}`}>
+      <main className="flex-1 min-h-0 w-full px-4 sm:px-6 pb-2 pt-2 sm:pt-3 flex flex-col">
+        <div className={`browse-shell flex-1 min-h-0 ${activeTab === "swipe" ? "flex flex-col" : "overflow-y-auto"}`}>
           <LocalErrorBoundary label="Panel">
             {activeTab === "applied" ? (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full" id="panel-applied">
@@ -293,38 +293,29 @@ const Index = () => {
                 </div>
               </motion.div>
             ) : (
-              <div className="browse-column flex h-full min-h-0 flex-col gap-3 pb-1" id="panel-swipe">
-                <div className="shrink-0">
-                  <JobFilters filters={filters} onChange={handleFiltersChange} />
-                </div>
-
-                {!hideSuggestion && (!candidate.cvUrl || savedJobs.length > 0) && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="shrink-0 w-full rounded-xl bg-secondary/60 border border-border p-3"
-                  >
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium leading-relaxed text-foreground">
-                          {!candidate.cvUrl
-                            ? "Zwiększ szanse na odpowiedź. Dodaj CV do profilu."
-                            : `Masz ${savedJobs.length} zapisan${savedJobs.length === 1 ? "ą" : savedJobs.length > 1 && savedJobs.length < 5 ? "e" : "ych"} ofert${savedJobs.length === 1 ? "ę" : "y"}. Zobacz je!`}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        {!candidate.cvUrl ? (
-                          <Link to="/profile" className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground whitespace-nowrap">Dodaj CV</Link>
-                        ) : (
-                          <button onClick={() => changeTab("saved")} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground whitespace-nowrap">Przejdź</button>
-                        )}
-                        <button onClick={() => setHideSuggestion(true)} className="p-1 rounded-lg text-muted-foreground hover:bg-secondary transition-colors" aria-label="Zamknij podpowiedź">
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
+              <div className="browse-column flex flex-1 min-h-0 flex-col gap-2 pb-1" id="panel-swipe">
+                <div className="shrink-0 flex items-center gap-2">
+                  <div className="shrink-0">
+                    <JobFilters filters={filters} onChange={handleFiltersChange} />
+                  </div>
+                  {!hideSuggestion && (!candidate.cvUrl || savedJobs.length > 0) && (
+                    <div className="flex-1 min-w-0 flex items-center gap-2 rounded-lg bg-secondary/60 border border-border px-3 py-1.5">
+                      <p className="text-[11px] font-medium text-foreground truncate">
+                        {!candidate.cvUrl
+                          ? "Dodaj CV do profilu"
+                          : `${savedJobs.length} zapisanych ofert`}
+                      </p>
+                      {!candidate.cvUrl ? (
+                        <Link to="/profile" className="px-2 py-1 rounded-md text-[11px] font-medium bg-primary text-primary-foreground whitespace-nowrap shrink-0">Dodaj CV</Link>
+                      ) : (
+                        <button onClick={() => changeTab("saved")} className="px-2 py-1 rounded-md text-[11px] font-medium bg-primary text-primary-foreground whitespace-nowrap shrink-0">Zobacz</button>
+                      )}
+                      <button onClick={() => setHideSuggestion(true)} className="p-0.5 rounded text-muted-foreground hover:bg-secondary transition-colors shrink-0" aria-label="Zamknij podpowiedź">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                  </motion.div>
-                )}
+                  )}
+                </div>
 
                 {filteredJobs.length === 0 ? (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12 w-full max-w-xs mx-auto">
