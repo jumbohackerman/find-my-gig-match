@@ -147,8 +147,6 @@
   .browse-card-frame {
     position: relative;
     width: 100%;
-    max-height: var(--browse-card-max-height);
-    aspect-ratio: 10 / 16;
     margin-inline: auto;
   }
 
